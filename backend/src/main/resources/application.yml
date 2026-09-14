@@ -1,0 +1,86 @@
+server:
+  port: ${SERVER_PORT:8081}
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: cams-backend
+
+  config:
+    import:
+      - optional:classpath:application-local.yml
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 25MB
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cams_db}
+    username: ${POSTGRES_USER:cams_user}
+    password: ${POSTGRES_PASSWORD:cams_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: CamsHikariCP
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 25
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+
+app:
+  security:
+    admin:
+      email: ${CAMS_ADMIN_EMAIL:admin@cams.local}
+      password: ${CAMS_ADMIN_PASSWORD:}
+    jwt:
+      secret: ${CAMS_JWT_SECRET:4a72d3f9e8b1c5a6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0}
+      access-token-expiration-ms: 900000 # 15 minutes
+      refresh-token-expiration-ms: 604800000 # 7 days
+  storage:
+    upload-dir: ${CAMS_UPLOAD_DIR:${CAMS_STORAGE_LOCAL_BASE_PATH:./uploads}}
+    max-file-size-bytes: 10485760 # 10 MB
+    max-request-size-bytes: 26214400 # 25 MB
+
+logging:
+  level:
+    root: INFO
+    com.cams: DEBUG
+    org.flywaydb: INFO
+    org.hibernate.SQL: WARN

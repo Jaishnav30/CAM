@@ -1,0 +1,447 @@
+@import './variables.css';
+
+/* ========================================================================= */
+/* CSS Reset & Base Defaults                                                 */
+/* ========================================================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Professional Styled Thin Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: var(--radius-full);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  /* Financial tabular numeric alignment */
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Layout Utilities */
+.container {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-4);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-6);
+  }
+}
+
+/* Excel Style Card Surface */
+.card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border-default);
+}
+
+/* Financial Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: 0.2rem 0.55rem;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.02em;
+}
+
+.badge-success {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-warning {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badge-info {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.badge-danger {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* Buttons - MS Excel Dark Green Primary */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: 0.45rem 0.95rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.btn-primary {
+  background-color: var(--excel-green);
+  color: var(--text-inverse);
+  box-shadow: 0 1px 2px rgba(16, 124, 65, 0.2);
+}
+
+.btn-primary:hover {
+  background-color: var(--excel-green-hover);
+}
+
+.btn-primary:active {
+  background-color: var(--excel-dark);
+}
+
+.btn-outline {
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+}
+
+.btn-outline:hover {
+  background-color: var(--bg-surface-elevated);
+  border-color: #94a3b8;
+}
+
+/* Form Inputs (Crisp Light Theme) */
+.form-input {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--excel-green);
+  box-shadow: 0 0 0 2px rgba(16, 124, 65, 0.18);
+}
+
+.form-input:disabled {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Modern Fancy Select Dropdowns */
+select.form-input,
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23107c41' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1.1rem;
+  padding-right: 2.5rem !important;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  border: 1.5px solid #cbd5e1;
+  font-weight: 500;
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+select.form-input:hover:not(:disabled),
+.form-select:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background-color: #f8fafc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+select.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--excel-green);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(16, 124, 65, 0.16), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+select.form-input option {
+  padding: 0.6rem 0.8rem;
+  background-color: #ffffff;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+/* Excel Style Data Table */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: #ffffff;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--font-size-sm);
+}
+
+.data-table th {
+  background-color: #f8fafc;
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #334155;
+  border-bottom: 2px solid var(--border-default);
+  border-right: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+.data-table th:last-child {
+  border-right: none;
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-sm);
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid #f1f5f9;
+  color: var(--text-primary);
+}
+
+.data-table td:last-child {
+  border-right: none;
+}
+
+.data-table tr:hover td {
+  background-color: #f0fdf4; /* Subtle Excel green row hover highlight */
+}
+
+/* Navigation Tabs (Top or Sub) */
+.nav-tab {
+  padding: 0.55rem 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.nav-tab:hover {
+  color: var(--excel-green);
+}
+
+.nav-tab.active {
+  color: var(--excel-green);
+  border-bottom-color: var(--excel-green);
+  font-weight: 700;
+}
+
+/* Smooth Auth Form Transition */
+@keyframes authFormFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.auth-form-enter {
+  animation: authFormFadeIn 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+/* Hide scrollbar for auth form container */
+.auth-form-container::-webkit-scrollbar,
+.auth-form-side::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.auth-form-container,
+.auth-form-side {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ========================================================================= */
+/* Auth Split Card & Responsive Mobile View                                 */
+/* ========================================================================= */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: #f1f5f9;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 920px;
+  max-height: 92vh;
+  background-color: #ffffff;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15), 0 0 0 1px #e2e8f0;
+  min-height: 520px;
+  transition: height 380ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: height;
+}
+
+/* Desktop Hero Side: 45% column with background image */
+.auth-hero-banner {
+  flex: 1 1 45%;
+  position: relative;
+  background: url('/finance_login_hero.jpg') center center / cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2.5rem 2.25rem;
+  color: #ffffff;
+}
+
+.auth-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(165deg, rgba(7, 67, 32, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%);
+  backdrop-filter: blur(1px);
+}
+
+.auth-hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-hero-footer {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+/* Form Side */
+.auth-form-side {
+  flex: 1 1 55%;
+  padding: 2.25rem 2.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+/* ========================================================================= */
+/* Mobile View (max-width: 768px): Header at top, NO image, dark green bg    */
+/* ========================================================================= */
+@media (max-width: 768px) {
+  .auth-wrapper {
+    padding: 1rem 0.75rem;
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    flex-direction: column !important;
+    max-width: 480px;
+    height: auto !important;
+    max-height: none !important;
+    min-height: unset !important;
+    margin: 0.5rem auto;
+    border-radius: var(--radius-lg);
+  }
+
+  .auth-hero-banner {
+    flex: none !important;
+    /* Remove image completely on mobile view */
+    background-image: none !important;
+    background: linear-gradient(165deg, #074320 0%, #063519 60%, #042411 100%) !important;
+    padding: 1.5rem 1.35rem !important;
+    justifyContent: center !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .auth-hero-overlay {
+    display: none !important;
+  }
+
+  .auth-hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .auth-hero-footer {
+    display: none !important;
+  }
+
+  .auth-form-side {
+    padding: 1.5rem 1.25rem !important;
+    overflow: visible;
+  }
+}

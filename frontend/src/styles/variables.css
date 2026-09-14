@@ -1,0 +1,77 @@
+:root {
+  /* ========================================================================= */
+  /* MS Excel Financial Theme - Professional Light Palette                     */
+  /* Colors: Dark Green (#107c41), Green (#16a34a), Black (#0f172a), White   */
+  /* ========================================================================= */
+
+  /* Surface & Canvas (Light Spreadsheet Palette) */
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --bg-surface-hover: #e2e8f0;
+
+  /* MS Excel Brand Greens */
+  --excel-dark: #074320;
+  --excel-green: #107c41;
+  --excel-green-hover: #0b5a2f;
+  --excel-green-light: #e8f5e9;
+  --excel-green-subtle: rgba(16, 124, 65, 0.08);
+
+  /* Borders & Gridlines */
+  --border-subtle: #e2e8f0;
+  --border-default: #cbd5e1;
+  --border-focus: #107c41;
+  --border-grid: #e2e8f0;
+
+  /* Typography Colors */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Brand Accents */
+  --accent-primary: #107c41;
+  --accent-primary-hover: #0b5a2f;
+  --accent-primary-subtle: rgba(16, 124, 65, 0.09);
+
+  /* Status Colors (Accessible on Light Canvas) */
+  --color-income: #15803d;
+  --color-expense: #dc2626;
+  --color-pending: #d97706;
+  --color-info: #0284c7;
+
+  /* Typography: Nunito & Nunito Sans (Finance Edition) */
+  --font-family: 'Nunito', 'Nunito Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+
+  /* Spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows (Subtle, Crisp Corporate Elevations) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}

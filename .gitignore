@@ -1,0 +1,52 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment and Secret Files
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Backend & Java
+backend/target/
+backend/*.log
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/uploads/staging/*
+!backend/uploads/staging/.gitkeep
+backend/.flattened-pom.xml
+
+# Frontend & Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# Markdown files (ignore all except README.md)
+*.md
+!README.md
+!readme.md
+
+# Postman Collections & Environments
+*Postman*.json
+*postman*.json
+
+# Local private configuration
+**/application-local.*
+**/application-dev.*
+
+
+

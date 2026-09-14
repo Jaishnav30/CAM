@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cams-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cams_db}
+      POSTGRES_USER: ${POSTGRES_USER:-cams_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cams_password}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - cams_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cams_user} -d ${POSTGRES_DB:-cams_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  cams_pgdata:
+    name: cams_pgdata

@@ -181,20 +181,54 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onReg
       return;
     }
 
-    const digit = cleaned.slice(-1); // Take last digit
+    if (cleaned.length > 1) {
+      // Pasted or fast-typed multiple digits
+      const digits = cleaned.split('');
+      const updated = [...otp];
+      let lastIdx = index;
+      for (let i = 0; i < digits.length && index + i < 6; i++) {
+        updated[index + i] = digits[i];
+        lastIdx = index + i;
+      }
+      setOtp(updated);
+      const nextFocus = Math.min(lastIdx + 1, 5);
+      otpInputRefs.current[nextFocus]?.focus();
+      otpInputRefs.current[nextFocus]?.select();
+      return;
+    }
+
+    // Single digit entered
     const updated = [...otp];
-    updated[index] = digit;
+    updated[index] = cleaned;
     setOtp(updated);
 
-    // Auto-focus next input
-    if (index < 5 && digit) {
+    // Auto-focus next input immediately
+    if (index < 5) {
       otpInputRefs.current[index + 1]?.focus();
+      otpInputRefs.current[index + 1]?.select();
     }
   };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+    if (e.key === 'Backspace') {
+      if (!otp[index] && index > 0) {
+        // Current box is empty: jump to previous box, clear it, and focus
+        const updated = [...otp];
+        updated[index - 1] = '';
+        setOtp(updated);
+        otpInputRefs.current[index - 1]?.focus();
+      } else if (otp[index]) {
+        // Clear current box
+        const updated = [...otp];
+        updated[index] = '';
+        setOtp(updated);
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
       otpInputRefs.current[index - 1]?.focus();
+      otpInputRefs.current[index - 1]?.select();
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+      otpInputRefs.current[index + 1]?.select();
     }
   };
 
@@ -211,6 +245,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onReg
 
     const nextIndex = Math.min(pasted.length, 5);
     otpInputRefs.current[nextIndex]?.focus();
+    otpInputRefs.current[nextIndex]?.select();
   };
 
   // Step 2: Final submit with OTP
@@ -1041,15 +1076,19 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onReg
                 {otp.map((digit, index) => (
                   <input
                     key={index}
+                    ref={(el) => {
+                      otpInputRefs.current[index] = el;
+                    }}
                     id={`otp-input-${index}`}
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    maxLength={1}
+                    maxLength={2}
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                    onPaste={index === 0 ? handleOtpPaste : undefined}
+                    onPaste={handleOtpPaste}
+                    onFocus={(e) => e.target.select()}
                     style={{
                       width: '42px',
                       height: '48px',

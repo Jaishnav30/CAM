@@ -92,6 +92,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     categoryId?: string;
     paymentMode?: string;
     transactionDate?: string;
+    screenshot?: string;
+    bill?: string;
   }>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingText, setLoadingText] = useState<string>('Saving...');
@@ -170,6 +172,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   // Auto-sync invoice status based on bill upload
   const handleSetBillFile = (file: File | null) => {
     setBillFile(file);
+    if (file) {
+      setFieldErrors((prev) => ({ ...prev, bill: undefined }));
+    }
     if (billPreview) URL.revokeObjectURL(billPreview);
     if (file) {
       if (file.type.startsWith('image/')) {
@@ -185,6 +190,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const handleSetScreenshotFile = (file: File | null) => {
     setScreenshotFile(file);
+    if (file) {
+      setFieldErrors((prev) => ({ ...prev, screenshot: undefined }));
+    }
     if (screenshotPreview) URL.revokeObjectURL(screenshotPreview);
     if (file) {
       if (file.type.startsWith('image/')) {
@@ -224,6 +232,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       categoryId?: string;
       paymentMode?: string;
       transactionDate?: string;
+      screenshot?: string;
+      bill?: string;
     } = {};
 
     const parsedAmount = parseFloat(amount);
@@ -247,9 +257,33 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       errors.transactionDate = 'Please select a transaction date';
     }
 
+    // Screenshot and bill are mandatory for all transactions
+    const hasScreenshot =
+      !!screenshotFile ||
+      (isEditing && existingDocs.some((d) => d.documentType === 'PAYMENT_SCREENSHOT'));
+    const hasBill =
+      !!billFile ||
+      (isEditing && existingDocs.some((d) => d.documentType === 'BILL'));
+
+    if (!hasScreenshot) {
+      errors.screenshot = 'Payment screenshot is required';
+    }
+
+    if (!hasBill) {
+      errors.bill = 'Bill / invoice document is required';
+    }
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setError('Please fill in all mandatory fields highlighted below.');
+      if (!hasScreenshot && !hasBill) {
+        setError('Both Payment Screenshot and Bill / Invoice Document are mandatory.');
+      } else if (!hasScreenshot) {
+        setError('Payment Screenshot is mandatory. Please upload the payment/UPI receipt.');
+      } else if (!hasBill) {
+        setError('Bill / Invoice Document is mandatory. Please upload the bill image or PDF.');
+      } else {
+        setError('Please fill in all mandatory fields highlighted below.');
+      }
       return;
     }
 
@@ -301,6 +335,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           await documentApi.uploadDocument(savedTxn.id, 'PAYMENT_SCREENSHOT', screenshotFile);
         } catch (uploadErr) {
           console.error('Failed to upload screenshot', uploadErr);
+          throw new Error('Transaction saved, but payment screenshot upload failed: ' + (uploadErr instanceof Error ? uploadErr.message : 'Upload failed'));
         }
       }
 
@@ -310,6 +345,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           await documentApi.uploadDocument(savedTxn.id, 'BILL', billFile);
         } catch (uploadErr) {
           console.error('Failed to upload bill', uploadErr);
+          throw new Error('Transaction saved, but bill document upload failed: ' + (uploadErr instanceof Error ? uploadErr.message : 'Upload failed'));
         }
       }
 
@@ -682,27 +718,31 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               </div>
             </div>
             <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '4px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem', marginTop: '0.6rem' }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  Supporting Documents <span style={{ color: '#ef4444', fontWeight: 800 }}>* (Both Required)</span>
+                </label>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                  PNG, JPG, PDF up to 10MB
+                </span>
               </div>
-              <span style={{ padding: '15px 0 0 0',fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                PNG, JPG, PDF up to 10MB
-              </span>
-            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '1rem' }}>
              {/* Card 1: Transaction / Payment Screenshot */}
               <div
                 style={{
-                  border: screenshotFile
+                  border: fieldErrors.screenshot
+                    ? '1.5px solid #ef4444'
+                    : screenshotFile
                     ? '1.5px solid #10b981'
                     : isDraggingScreenshot
                     ? '2px dashed #0284c7'
                     : isHoveredScreenshot
                     ? '1.5px dashed #0284c7'
                     : '1.5px dashed #94a3b8',
-                  background: screenshotFile
+                  background: fieldErrors.screenshot
+                    ? 'linear-gradient(135deg, rgba(254, 242, 242, 0.85) 0%, rgba(254, 226, 226, 0.4) 100%)'
+                    : screenshotFile
                     ? 'linear-gradient(135deg, rgba(240, 253, 244, 0.8) 0%, rgba(220, 252, 231, 0.4) 100%)'
                     : isDraggingScreenshot
                     ? 'linear-gradient(135deg, rgba(224, 242, 254, 0.85) 0%, rgba(186, 230, 253, 0.5) 100%)'
@@ -710,7 +750,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     ? 'linear-gradient(135deg, rgba(240, 249, 255, 0.75) 0%, rgba(241, 245, 249, 0.6) 100%)'
                     : 'linear-gradient(135deg, rgba(248, 250, 252, 0.7) 0%, rgba(241, 245, 249, 0.4) 100%)',
                   backdropFilter: 'blur(6px)',
-                  boxShadow: screenshotFile
+                  boxShadow: fieldErrors.screenshot
+                    ? '0 2px 10px rgba(239, 68, 68, 0.15)'
+                    : screenshotFile
                     ? '0 2px 10px rgba(16, 185, 129, 0.12)'
                     : isDraggingScreenshot || isHoveredScreenshot
                     ? '0 4px 14px rgba(2, 132, 199, 0.1)'
@@ -767,8 +809,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         width: '36px',
                         height: '36px',
                         borderRadius: 'var(--radius-md)',
-                        backgroundColor: screenshotFile ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                        color: screenshotFile ? 'var(--color-income)' : 'var(--accent-primary)',
+                        backgroundColor: fieldErrors.screenshot
+                          ? 'rgba(239, 68, 68, 0.15)'
+                          : screenshotFile
+                          ? 'rgba(16, 185, 129, 0.15)'
+                          : 'rgba(59, 130, 246, 0.15)',
+                        color: fieldErrors.screenshot
+                          ? '#ef4444'
+                          : screenshotFile
+                          ? 'var(--color-income)'
+                          : 'var(--accent-primary)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -778,11 +828,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       <ImageIcon size={19} />
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>
-                        Transaction Screenshot
+                      <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <span>Transaction Screenshot</span>
+                        <span style={{ color: '#ef4444', fontWeight: 800 }}>*</span>
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                        UPI receipt/payment confirmation
+                      <div style={{ fontSize: '0.72rem', color: fieldErrors.screenshot ? '#ef4444' : 'var(--text-muted)', fontWeight: fieldErrors.screenshot ? 600 : 400 }}>
+                        {fieldErrors.screenshot || 'UPI receipt/payment confirmation (Mandatory)'}
                       </div>
                     </div>
                   </div>
@@ -856,10 +907,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     style={{
                       textAlign: 'center',
                       padding: '0.75rem 0',
-                      color: 'var(--text-secondary)',
+                      color: fieldErrors.screenshot ? '#ef4444' : 'var(--text-secondary)',
                     }}
                   >
-                    <UploadCloud size={24} style={{ margin: '0 auto 0.35rem', color: 'var(--accent-primary)' }} />
+                    <UploadCloud size={24} style={{ margin: '0 auto 0.35rem', color: fieldErrors.screenshot ? '#ef4444' : 'var(--accent-primary)' }} />
                     <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>
                       Click or drag payment screenshot here
                     </div>
@@ -870,14 +921,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               {/* Card 2: Bill / Invoice Document */}
               <div
                 style={{
-                  border: billFile
+                  border: fieldErrors.bill
+                    ? '1.5px solid #ef4444'
+                    : billFile
                     ? '1.5px solid #10b981'
                     : isDraggingBill
                     ? '2px dashed #d97706'
                     : isHoveredBill
                     ? '1.5px dashed #d97706'
                     : '1.5px dashed #94a3b8',
-                  background: billFile
+                  background: fieldErrors.bill
+                    ? 'linear-gradient(135deg, rgba(254, 242, 242, 0.85) 0%, rgba(254, 226, 226, 0.4) 100%)'
+                    : billFile
                     ? 'linear-gradient(135deg, rgba(240, 253, 244, 0.8) 0%, rgba(220, 252, 231, 0.4) 100%)'
                     : isDraggingBill
                     ? 'linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(253, 230, 138, 0.5) 100%)'
@@ -885,7 +940,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     ? 'linear-gradient(135deg, rgba(255, 251, 235, 0.75) 0%, rgba(241, 245, 249, 0.6) 100%)'
                     : 'linear-gradient(135deg, rgba(248, 250, 252, 0.7) 0%, rgba(241, 245, 249, 0.4) 100%)',
                   backdropFilter: 'blur(6px)',
-                  boxShadow: billFile
+                  boxShadow: fieldErrors.bill
+                    ? '0 2px 10px rgba(239, 68, 68, 0.15)'
+                    : billFile
                     ? '0 2px 10px rgba(16, 185, 129, 0.12)'
                     : isDraggingBill || isHoveredBill
                     ? '0 4px 14px rgba(217, 119, 6, 0.1)'
@@ -942,8 +999,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         width: '36px',
                         height: '36px',
                         borderRadius: 'var(--radius-md)',
-                        backgroundColor: billFile ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                        color: billFile ? 'var(--color-income)' : '#f59e0b',
+                        backgroundColor: fieldErrors.bill
+                          ? 'rgba(239, 68, 68, 0.15)'
+                          : billFile
+                          ? 'rgba(16, 185, 129, 0.15)'
+                          : 'rgba(245, 158, 11, 0.15)',
+                        color: fieldErrors.bill
+                          ? '#ef4444'
+                          : billFile
+                          ? 'var(--color-income)'
+                          : '#f59e0b',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -953,11 +1018,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       <FileCheck2 size={19} />
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>
-                        Bill / Invoice Document
+                      <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <span>Bill / Invoice Document</span>
+                        <span style={{ color: '#ef4444', fontWeight: 800 }}>*</span>
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                        Store receipt, vendor Invoice
+                      <div style={{ fontSize: '0.72rem', color: fieldErrors.bill ? '#ef4444' : 'var(--text-muted)', fontWeight: fieldErrors.bill ? 600 : 400 }}>
+                        {fieldErrors.bill || 'Store receipt, vendor invoice (Mandatory)'}
                       </div>
                     </div>
                   </div>
@@ -1031,10 +1097,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     style={{
                       textAlign: 'center',
                       padding: '0.75rem 0',
-                      color: 'var(--text-secondary)',
+                      color: fieldErrors.bill ? '#ef4444' : 'var(--text-secondary)',
                     }}
                   >
-                    <UploadCloud size={24} style={{ margin: '0 auto 0.35rem', color: '#f59e0b' }} />
+                    <UploadCloud size={24} style={{ margin: '0 auto 0.35rem', color: fieldErrors.bill ? '#ef4444' : '#f59e0b' }} />
                     <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>
                       Click or drag vendor bill / invoice here
                     </div>

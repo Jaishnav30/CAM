@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
-  KeyRound,
   Eye,
   EyeOff,
   UserCheck,
@@ -55,7 +54,7 @@ export const App: React.FC = () => {
   const authContentRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    if (currentUser || !authContentRef.current) return;
+    if (currentUser) return;
 
     const updateHeight = () => {
       // In mobile view (<= 768px), let card adapt naturally
@@ -63,25 +62,18 @@ export const App: React.FC = () => {
         setAuthCardHeight(undefined);
         return;
       }
-      if (authContentRef.current) {
-        // Content height + vertical padding (2.25rem * 2 = 72px) + 16px buffer
-        const contentHeight = authContentRef.current.scrollHeight;
-        const targetHeight = Math.max(540, contentHeight + 88);
-        setAuthCardHeight(targetHeight);
+      // Fixed height on desktop: compact for Sign In, generous scrollable for Register
+      if (isRegisterMode) {
+        setAuthCardHeight(620);
+      } else {
+        setAuthCardHeight(490);
       }
     };
 
     updateHeight();
-
-    const resizeObserver = new ResizeObserver(() => {
-      updateHeight();
-    });
-
-    resizeObserver.observe(authContentRef.current);
     window.addEventListener('resize', updateHeight);
 
     return () => {
-      resizeObserver.disconnect();
       window.removeEventListener('resize', updateHeight);
     };
   }, [currentUser, isRegisterMode]);
@@ -611,21 +603,30 @@ export const App: React.FC = () => {
 
                 {/* Login / Register Form Side */}
                 <div className="auth-form-side">
-                  <div ref={authContentRef} style={{ width: '100%' }}>
-                    {/* Top Sliding Segmented Pill Toggle */}
                   <div
+                    ref={authContentRef}
                     style={{
-                      position: 'relative',
+                      width: '100%',
+                      height: '100%',
                       display: 'flex',
-                      backgroundColor: '#f1f5f9',
-                      borderRadius: 'var(--radius-full)',
-                      padding: '4px',
-                      marginBottom: '1.5rem',
-                      border: '1px solid #e2e8f0',
-                      boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.05)',
-                      flexShrink: 0,
+                      flexDirection: 'column',
+                      minHeight: 0,
                     }}
                   >
+                    {/* Top Sliding Segmented Pill Toggle (Sticky Header) */}
+                    <div
+                      style={{
+                        position: 'relative',
+                        display: 'flex',
+                        backgroundColor: '#f1f5f9',
+                        borderRadius: 'var(--radius-full)',
+                        padding: '4px',
+                        marginBottom: '1rem',
+                        border: '1px solid #e2e8f0',
+                        boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.05)',
+                        flexShrink: 0,
+                      }}
+                    >
                     {/* Sliding pill indicator (GPU accelerated transform) */}
                     <div
                       style={{
@@ -704,7 +705,17 @@ export const App: React.FC = () => {
                   </div>
 
                   {/* Animated Form Container */}
-                  <div key={isRegisterMode ? 'register' : 'login'} className="auth-form-enter">
+                  <div
+                    key={isRegisterMode ? 'register' : 'login'}
+                    className="auth-form-enter"
+                    style={{
+                      flex: 1,
+                      minHeight: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden',
+                    }}
+                  >
                     {isRegisterMode ? (
                       <RegisterForm
                         onBackToLogin={() => {
@@ -723,7 +734,7 @@ export const App: React.FC = () => {
                             Account Authentication
                           </h2>
                           <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
-                            Sign in with your CAM credentials or choose a quick-fill role below.
+                            Sign in with your CAM credentials to access the financial portal.
                           </p>
                         </div>
 
@@ -810,95 +821,13 @@ export const App: React.FC = () => {
                             fontWeight: 700,
                             gap: '0.6rem',
                             justifyContent: 'center',
-                            marginTop: '0.25rem',
+                            marginTop: '0.5rem',
                           }}
                         >
                           <LogIn size={18} />
                           {loginLoading ? 'Signing in...' : 'Sign In'}
                         </button>
                       </form>
-
-                      {/* Standard Role Accounts */}
-                      <div style={{ marginTop: '1.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.1rem' }}>
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.35rem',
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            color: '#64748b',
-                            textTransform: 'uppercase',
-                            marginBottom: '0.6rem',
-                            letterSpacing: '0.04em',
-                          }}
-                        >
-                          <KeyRound size={12} />
-                          <span>Standard Role Accounts</span>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
-                          <button
-                            type="button"
-                            className="btn btn-outline"
-                            style={{
-                              fontSize: '0.75rem',
-                              padding: '0.45rem',
-                              fontWeight: 700,
-                              backgroundColor: loginEmail === 'admin@cams.local' ? '#f0fdf4' : undefined,
-                              borderColor: loginEmail === 'admin@cams.local' ? '#86efac' : '#cbd5e1',
-                              color: loginEmail === 'admin@cams.local' ? '#166534' : undefined,
-                            }}
-                            onClick={() => {
-                              setLoginEmail('admin@cams.local');
-                              setLoginPassword('Password123!');
-                              setLoginError(null);
-                            }}
-                            title="Fill Admin Credentials"
-                          >
-                            Admin
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-outline"
-                            style={{
-                              fontSize: '0.75rem',
-                              padding: '0.45rem',
-                              fontWeight: 700,
-                              backgroundColor: loginEmail === 'accountant@cams.local' ? '#f0fdf4' : undefined,
-                              borderColor: loginEmail === 'accountant@cams.local' ? '#86efac' : '#cbd5e1',
-                              color: loginEmail === 'accountant@cams.local' ? '#166534' : undefined,
-                            }}
-                            onClick={() => {
-                              setLoginEmail('accountant@cams.local');
-                              setLoginPassword('Password123!');
-                              setLoginError(null);
-                            }}
-                            title="Fill Accountant Credentials"
-                          >
-                            Accountant
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-outline"
-                            style={{
-                              fontSize: '0.75rem',
-                              padding: '0.45rem',
-                              fontWeight: 700,
-                              backgroundColor: loginEmail === 'member1@cams.local' ? '#f0fdf4' : undefined,
-                              borderColor: loginEmail === 'member1@cams.local' ? '#86efac' : '#cbd5e1',
-                              color: loginEmail === 'member1@cams.local' ? '#166534' : undefined,
-                            }}
-                            onClick={() => {
-                              setLoginEmail('member1@cams.local');
-                              setLoginPassword('Password123!');
-                              setLoginError(null);
-                            }}
-                            title="Fill Member Credentials"
-                          >
-                            Member
-                          </button>
-                        </div>
-                      </div>
                     </>
                   )}
                 </div>

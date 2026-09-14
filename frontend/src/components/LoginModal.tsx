@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogIn, X, AlertCircle, ShieldCheck, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { LogIn, X, AlertCircle, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { authApi } from '../api/authApi';
 import { AuthUser } from '../types';
 
@@ -253,53 +253,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                 </div>
               </div>
 
-              {/* Standard Credentials Quick Fill Grid */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: '0.45rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  <KeyRound size={12} />
-                  <span>Standard Demo Accounts:</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.5rem', fontWeight: 700, borderColor: '#cbd5e1' }}
-                    onClick={() => {
-                      setEmail('admin@cams.local');
-                      setPassword('Password123!');
-                    }}
-                    title="Fill Admin Credentials"
-                  >
-                    Admin
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.5rem', fontWeight: 700, borderColor: '#cbd5e1' }}
-                    onClick={() => {
-                      setEmail('accountant@cams.local');
-                      setPassword('Password123!');
-                    }}
-                    title="Fill Accountant Credentials"
-                  >
-                    Accountant
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.5rem', fontWeight: 700, borderColor: '#cbd5e1' }}
-                    onClick={() => {
-                      setEmail('member1@cams.local');
-                      setPassword('Password123!');
-                    }}
-                    title="Fill Member Credentials"
-                  >
-                    Member
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.75rem' }}>
                 <button type="button" className="btn btn-outline" onClick={onClose} disabled={loading} style={{ padding: '0.55rem 1.1rem' }}>
                   Cancel
                 </button>

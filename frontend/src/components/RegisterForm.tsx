@@ -9,7 +9,7 @@ import {
   Sparkles,
   Mail,
   RotateCw,
-  Edit3,
+  Clock,
   ShieldCheck,
   Loader2,
 } from 'lucide-react';
@@ -318,81 +318,99 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onReg
   }
 
   return (
-    <div>
-      {/* Header & Step Tracker */}
-      <div style={{ marginBottom: '1.2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-            {step === 'DETAILS' ? 'Create an Account' : 'Verify Your Email'}
-          </h2>
-          <span
-            style={{
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              padding: '0.15rem 0.55rem',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: '#f0fdf4',
-              color: '#166534',
-              border: '1px solid #bbf7d0',
-            }}
-          >
-            Step {step === 'DETAILS' ? '1 of 2' : '2 of 2'}
-          </span>
-        </div>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-          {step === 'DETAILS'
-            ? 'Registration for Members and Accountants (Admin approval required)'
-            : `Enter the 6-digit code sent to ${email}`}
-        </p>
-      </div>
-
-      {/* Error alert */}
-      {error && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.7rem 0.9rem',
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: 'var(--radius-md)',
-            color: '#991b1b',
-            fontSize: '0.82rem',
-            marginBottom: '1rem',
-          }}
-        >
-          <AlertCircle size={16} style={{ flexShrink: 0 }} />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Info notification */}
-      {infoMessage && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.7rem 0.9rem',
-            backgroundColor: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: 'var(--radius-md)',
-            color: '#166534',
-            fontSize: '0.82rem',
-            marginBottom: '1rem',
-          }}
-        >
-          <Mail size={16} style={{ flexShrink: 0 }} />
-          <span>{infoMessage}</span>
-        </div>
-      )}
-
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
       {/* ===================================================================== */}
       {/* STEP 1: ACCOUNT DETAILS                                               */}
       {/* ===================================================================== */}
       {step === 'DETAILS' && (
-        <form onSubmit={handleProceedToOtp} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        <form
+          onSubmit={handleProceedToOtp}
+          noValidate
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            minHeight: 0,
+            overflow: 'hidden',
+          }}
+        >
+          {/* Scrollable Form Body */}
+          <div
+            className="custom-scrollbar"
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              minHeight: 0,
+              paddingRight: '0.4rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.85rem',
+            }}
+          >
+            {/* Header & Step Tracker */}
+            <div style={{ marginBottom: '0.35rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Create an Account
+                </h2>
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    padding: '0.15rem 0.55rem',
+                    borderRadius: 'var(--radius-full)',
+                    backgroundColor: '#f0fdf4',
+                    color: '#166534',
+                    border: '1px solid #bbf7d0',
+                  }}
+                >
+                  Step 1 of 2
+                </span>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
+                Registration for Members and Accountants (Admin approval required)
+              </p>
+            </div>
+
+            {/* Error alert */}
+            {error && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.65rem 0.85rem',
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: 'var(--radius-md)',
+                  color: '#991b1b',
+                  fontSize: '0.82rem',
+                }}
+              >
+                <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Info notification */}
+            {infoMessage && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.65rem 0.85rem',
+                  backgroundColor: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: 'var(--radius-md)',
+                  color: '#166534',
+                  fontSize: '0.82rem',
+                }}
+              >
+                <Mail size={16} style={{ flexShrink: 0 }} />
+                <span>{infoMessage}</span>
+              </div>
+            )}
           {/* Role Selection */}
           <div>
             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
@@ -824,36 +842,48 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onReg
             </div>
           )}
 
-          {/* Submit Step 1 Button */}
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
+          </div>
+
+          {/* Sticky Footer */}
+          <div
             style={{
-              padding: '0.7rem 1.5rem',
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              gap: '0.5rem',
-              justifyContent: 'center',
-              marginTop: '0.35rem',
-              backgroundColor: '#107c41',
-              color: '#ffffff',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.85 : 1,
+              flexShrink: 0,
+              paddingTop: '0.75rem',
+              marginTop: '0.4rem',
+              borderTop: '1px solid #e2e8f0',
+              backgroundColor: '#ffffff',
             }}
           >
-            {loading ? (
-              <>
-                <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                <span>Sending verification code...</span>
-              </>
-            ) : (
-              <>
-                <span>Continue to Email Verification</span>
-                <ArrowRight size={16} />
-              </>
-            )}
-          </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '0.7rem 1.5rem',
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                gap: '0.5rem',
+                justifyContent: 'center',
+                backgroundColor: '#107c41',
+                color: '#ffffff',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.85 : 1,
+              }}
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                  <span>Sending verification code...</span>
+                </>
+              ) : (
+                <>
+                  <span>Continue to Email Verification</span>
+                  <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+          </div>
         </form>
       )}
 
@@ -861,153 +891,233 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onReg
       {/* STEP 2: 6-DIGIT EMAIL OTP VERIFICATION                                */}
       {/* ===================================================================== */}
       {step === 'OTP' && (
-        <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Email Info Card */}
+        <form
+          onSubmit={handleFinalSubmit}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            minHeight: 0,
+            overflow: 'hidden',
+          }}
+        >
+          {/* Scrollable Form Body */}
           <div
+            className="custom-scrollbar"
             style={{
+              flex: 1,
+              overflowY: 'auto',
+              minHeight: 0,
+              paddingRight: '0.4rem',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0.75rem 1rem',
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: 'var(--radius-md)',
+              flexDirection: 'column',
+              gap: '1rem',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: 'var(--radius-full)',
-                  backgroundColor: '#dcfce7',
-                  color: '#166534',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <Mail size={16} />
+            {/* Header & Step Tracker */}
+            <div style={{ marginBottom: '0.35rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Verify Your Email
+                </h2>
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    padding: '0.15rem 0.55rem',
+                    borderRadius: 'var(--radius-full)',
+                    backgroundColor: '#f0fdf4',
+                    color: '#166534',
+                    border: '1px solid #bbf7d0',
+                  }}
+                >
+                  Step 2 of 2
+                </span>
               </div>
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Sent 6-digit code to</div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {email}
-                </div>
-              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
+                Enter the 6-digit code sent to {email}
+              </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setStep('DETAILS');
-                setError(null);
-                setInfoMessage(null);
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.3rem',
-                fontSize: '0.75rem',
-                color: '#107c41',
-                fontWeight: 700,
-                padding: '0.3rem 0.6rem',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'rgba(16, 124, 65, 0.08)',
-              }}
-              title="Edit email address"
-            >
-              <Edit3 size={13} />
-              <span>Edit</span>
-            </button>
-          </div>
+            {/* Error alert */}
+            {error && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.65rem 0.85rem',
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: 'var(--radius-md)',
+                  color: '#991b1b',
+                  fontSize: '0.82rem',
+                }}
+              >
+                <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                <span>{error}</span>
+              </div>
+            )}
 
-          {/* 6-box Segmented OTP Inputs */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.6rem', textAlign: 'center' }}>
-              Enter 6-Digit Verification Code *
-            </label>
+            {/* Info notification */}
+            {infoMessage && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.65rem 0.85rem',
+                  backgroundColor: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: 'var(--radius-md)',
+                  color: '#166534',
+                  fontSize: '0.82rem',
+                }}
+              >
+                <Mail size={16} style={{ flexShrink: 0 }} />
+                <span>{infoMessage}</span>
+              </div>
+            )}
+
+            {/* Email Info Card */}
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'center',
-                gap: '0.5rem',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.75rem 1rem',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: 'var(--radius-md)',
               }}
-              onPaste={handleOtpPaste}
             >
-              {otp.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => {
-                    otpInputRefs.current[idx] = el;
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div
                   style={{
-                    width: '44px',
-                    height: '52px',
-                    fontSize: '1.4rem',
-                    fontWeight: 800,
-                    textAlign: 'center',
-                    borderRadius: 'var(--radius-md)',
-                    border: digit ? '2px solid #107c41' : '1.5px solid #cbd5e1',
-                    backgroundColor: digit ? '#f0fdf4' : '#ffffff',
-                    color: '#0f172a',
-                    outline: 'none',
-                    boxShadow: digit ? '0 2px 4px rgba(16, 124, 65, 0.15)' : 'none',
-                    transition: 'all 120ms ease',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: 'var(--radius-full)',
+                    backgroundColor: '#dcfce7',
+                    color: '#166534',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}
-                  autoFocus={idx === 0}
-                />
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-              Tip: You can paste the complete 6-digit code directly
-            </div>
-          </div>
+                >
+                  <Mail size={16} />
+                </div>
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Sent 6-digit code to</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    {email}
+                  </div>
+                </div>
+              </div>
 
-          {/* Resend Code Section */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', fontSize: '0.78rem' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Didn't receive the email?</span>
-            {resendCooldown > 0 ? (
-              <span style={{ color: '#107c41', fontWeight: 700 }}>
-                Resend in {resendCooldown}s
-              </span>
-            ) : (
               <button
                 type="button"
-                onClick={handleResendOtp}
-                disabled={loading}
+                onClick={() => setStep('DETAILS')}
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
+                  fontSize: '0.75rem',
                   color: '#107c41',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  border: 'none',
+                  fontWeight: 600,
                   background: 'none',
-                  padding: 0,
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.2rem 0.4rem',
                 }}
               >
-                <RotateCw size={13} />
-                <span>Resend Code</span>
+                Change
               </button>
-            )}
+            </div>
+
+            {/* 6-Digit OTP Input Grid */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.5rem', textAlign: 'center' }}>
+                Verification Code *
+              </label>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    id={`otp-input-${index}`}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    onPaste={index === 0 ? handleOtpPaste : undefined}
+                    style={{
+                      width: '42px',
+                      height: '48px',
+                      textAlign: 'center',
+                      fontSize: '1.25rem',
+                      fontWeight: 800,
+                      borderRadius: 'var(--radius-md)',
+                      border: digit ? '2px solid #107c41' : '1.5px solid #cbd5e1',
+                      backgroundColor: digit ? '#f0fdf4' : '#ffffff',
+                      color: 'var(--text-primary)',
+                      outline: 'none',
+                      transition: 'all 150ms ease',
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Resend OTP Section */}
+            <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              {resendCooldown > 0 ? (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Clock size={13} />
+                  <span>Resend code in <strong>{resendCooldown}s</strong></span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={loading}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    color: '#107c41',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: 'none',
+                    background: 'none',
+                    padding: 0,
+                  }}
+                >
+                  <RotateCw size={13} />
+                  <span>Resend Code</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Submit Step 2 & Back Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+          {/* Sticky Footer */}
+          <div
+            style={{
+              flexShrink: 0,
+              paddingTop: '0.75rem',
+              marginTop: '0.4rem',
+              borderTop: '1px solid #e2e8f0',
+              backgroundColor: '#ffffff',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.4rem',
+            }}
+          >
             <button
               type="submit"
               className="btn btn-primary"
               disabled={loading || otp.join('').length !== 6}
               style={{
+                width: '100%',
                 padding: '0.75rem 1.5rem',
                 fontSize: '0.92rem',
                 fontWeight: 700,
@@ -1042,7 +1152,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onReg
                 fontSize: '0.8rem',
                 color: 'var(--text-secondary)',
                 fontWeight: 600,
-                padding: '0.4rem',
+                padding: '0.35rem',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',

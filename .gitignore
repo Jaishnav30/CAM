@@ -35,10 +35,11 @@ frontend/yarn-error.log*
 *.sublime-project
 *.sublime-workspace
 
-# Markdown files (ignore all except README.md)
+# Markdown files (ignore all except README.md and DEPLOYMENT.md)
 *.md
 !README.md
 !readme.md
+!DEPLOYMENT.md
 
 # Postman Collections & Environments
 *Postman*.json

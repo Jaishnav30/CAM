@@ -70,6 +70,9 @@ public class AuthService {
     @Value("${app.security.cookie.secure:true}")
     private boolean cookieSecure;
 
+    @Value("${app.security.cookie.same-site:None}")
+    private String cookieSameSite;
+
     @Transactional
     public void sendVerificationOtp(SendOtpRequest request) {
         String cleanEmail = request.getEmail().trim().toLowerCase();
@@ -322,10 +325,11 @@ public class AuthService {
     }
 
     private void setRefreshTokenCookie(HttpServletResponse response, String token, Duration maxAge) {
+        String effectiveSameSite = cookieSecure ? cookieSameSite : "Lax";
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, token)
                 .httpOnly(true)
                 .secure(cookieSecure)
-                .sameSite("Strict")
+                .sameSite(effectiveSameSite)
                 .path("/api/v1/auth")
                 .maxAge(maxAge)
                 .build();
@@ -334,10 +338,11 @@ public class AuthService {
     }
 
     private void clearRefreshTokenCookie(HttpServletResponse response) {
+        String effectiveSameSite = cookieSecure ? cookieSameSite : "Lax";
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(cookieSecure)
-                .sameSite("Strict")
+                .sameSite(effectiveSameSite)
                 .path("/api/v1/auth")
                 .maxAge(0)
                 .build();

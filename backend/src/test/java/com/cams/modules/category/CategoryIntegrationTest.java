@@ -131,8 +131,15 @@ class CategoryIntegrationTest {
     @Test
     @DisplayName("3. Duplicate category name is rejected with 409 Conflict")
     void duplicateCategoryRejected() throws Exception {
+        String dupName = "Dup Cat " + UUID.randomUUID().toString().substring(0, 8);
+        categoryRepository.save(Category.builder()
+                .name(dupName)
+                .type(CategoryType.EXPENSE)
+                .isActive(true)
+                .build());
+
         CreateCategoryRequest request = CreateCategoryRequest.builder()
-                .name("Deco")
+                .name(dupName)
                 .type(CategoryType.EXPENSE)
                 .description("Duplicate check")
                 .build();

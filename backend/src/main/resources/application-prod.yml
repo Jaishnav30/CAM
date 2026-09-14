@@ -1,0 +1,71 @@
+# ==============================================================================
+# CAM Production Spring Boot Profile
+# Active when SPRING_PROFILES_ACTIVE=prod (e.g. on Render / Railway)
+# ==============================================================================
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+
+spring:
+  datasource:
+    # Managed PostgreSQL URL (e.g. Supabase connection string)
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      pool-name: CamsProdHikariCP
+      maximum-pool-size: 5
+      minimum-idle: 2
+      idle-timeout: 300000
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+
+app:
+  security:
+    cookie:
+      secure: true
+      same-site: None
+    jwt:
+      secret: ${CAMS_JWT_SECRET}
+      access-token-expiration-ms: 900000 # 15 minutes
+      refresh-token-expiration-ms: 604800000 # 7 days
+    admin:
+      email: ${CAMS_ADMIN_EMAIL:admin@cams.local}
+      password: ${CAMS_ADMIN_PASSWORD}
+
+logging:
+  level:
+    root: INFO
+    com.cams: INFO
+    org.flywaydb: INFO
+    org.hibernate: WARN

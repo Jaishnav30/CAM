@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: cams-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    region: oregon
+    healthCheckPath: /api/v1/auth/me
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: POSTGRES_USER
+        sync: false
+      - key: POSTGRES_PASSWORD
+        sync: false
+      - key: CAMS_JWT_SECRET
+        generateValue: true
+      - key: CAMS_ADMIN_EMAIL
+        value: admin@cams.local
+      - key: CAMS_ADMIN_PASSWORD
+        sync: false
+      - key: SPRING_MAIL_USERNAME
+        sync: false
+      - key: SPRING_MAIL_PASSWORD
+        sync: false
+      - key: CAMS_ALLOWED_ORIGINS
+        sync: false

@@ -1,0 +1,92 @@
+name: CAM CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ============================================================================
+  # 1. BACKEND TEST & BUILD
+  # ============================================================================
+  backend-ci:
+    name: Backend Build & Automated Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: cams_db
+          POSTGRES_USER: cams_user
+          POSTGRES_PASSWORD: cams_password
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Eclipse Temurin JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Backend Integration & Unit Tests
+        working-directory: backend
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/cams_db
+          POSTGRES_USER: cams_user
+          POSTGRES_PASSWORD: cams_password
+          CAMS_ADMIN_EMAIL: admin@cams.local
+          CAMS_ADMIN_PASSWORD: Password123!
+          CAMS_JWT_SECRET: 4a72d3f9e8b1c5a6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0
+        run: mvn -B clean verify
+
+      - name: Upload Production Backend JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: cams-backend-jar
+          path: backend/target/cams-backend-*.jar
+          retention-days: 7
+
+  # ============================================================================
+  # 2. FRONTEND TYPECHECK & BUILD
+  # ============================================================================
+  frontend-ci:
+    name: Frontend Typecheck & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: TypeScript Check & Vite Production Build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Upload Frontend Dist Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: cams-frontend-dist
+          path: frontend/dist/
+          retention-days: 7

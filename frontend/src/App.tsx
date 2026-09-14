@@ -36,8 +36,8 @@ import { UserDirectory } from './components/UserDirectory';
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-  const [loginEmail, setLoginEmail] = useState<string>('admin@cams.local');
-  const [loginPassword, setLoginPassword] = useState<string>('Password123!');
+  const [loginEmail, setLoginEmail] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loginLoading, setLoginLoading] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -86,8 +86,9 @@ export const App: React.FC = () => {
     setLoginLoading(true);
     setLoginError(null);
     try {
-      const res = await authApi.login(loginEmail.trim(), loginPassword);
-      setCurrentUser(res.user);
+      await authApi.login(loginEmail.trim(), loginPassword);
+      const fullUser = await authApi.getMe();
+      setCurrentUser(fullUser);
     } catch (err: unknown) {
       setLoginError(err instanceof Error ? err.message : 'Login failed');
     } finally {

@@ -49,8 +49,8 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
   const [previewData, setPreviewData] = useState<{ url: string; contentType: string; filename: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
-  const canUpload = currentUser?.permissions.includes('documents:upload') ?? false;
-  const canDelete = currentUser?.permissions.includes('documents:delete') ?? false;
+  const canUpload = currentUser?.permissions?.includes('documents:upload') ?? false;
+  const canDelete = currentUser?.permissions?.includes('documents:delete') ?? false;
 
   useEffect(() => {
     if (isOpen && transaction) {

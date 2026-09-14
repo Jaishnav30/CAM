@@ -10,8 +10,8 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [email, setEmail] = useState('admin@cams.local');
-  const [password, setPassword] = useState('Password123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +23,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
     setLoading(true);
     setError(null);
     try {
-      const res = await authApi.login(email.trim(), password);
-      onSuccess(res.user);
+      await authApi.login(email.trim(), password);
+      const fullUser = await authApi.getMe();
+      onSuccess(fullUser);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed');

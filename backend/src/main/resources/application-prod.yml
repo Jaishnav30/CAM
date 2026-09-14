@@ -33,10 +33,10 @@ spring:
     validate-on-migrate: true
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${SPRING_MAIL_USERNAME}
-    password: ${SPRING_MAIL_PASSWORD}
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -46,11 +46,16 @@ spring:
             required: true
           ssl:
             trust: smtp.gmail.com
-          connectiontimeout: 10000
-          timeout: 10000
-          writetimeout: 10000
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 app:
+  mail:
+    resend-api-key: ${RESEND_API_KEY:}
+    brevo-api-key: ${BREVO_API_KEY:}
+    from-email: ${CAMS_FROM_EMAIL:${SPRING_MAIL_USERNAME:onboarding@resend.dev}}
+    from-name: ${CAMS_FROM_NAME:CAM - Club Accounting & Management}
   security:
     cookie:
       secure: true

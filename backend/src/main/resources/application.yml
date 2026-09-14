@@ -65,6 +65,11 @@ spring:
           writetimeout: 10000
 
 app:
+  mail:
+    resend-api-key: ${RESEND_API_KEY:}
+    brevo-api-key: ${BREVO_API_KEY:}
+    from-email: ${CAMS_FROM_EMAIL:${spring.mail.username:onboarding@resend.dev}}
+    from-name: ${CAMS_FROM_NAME:CAM - Club Accounting & Management}
   security:
     admin:
       email: ${CAMS_ADMIN_EMAIL:admin@cams.local}

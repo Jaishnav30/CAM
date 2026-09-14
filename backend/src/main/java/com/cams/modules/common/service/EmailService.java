@@ -1,5 +1,6 @@
 package com.cams.modules.common.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,22 +9,52 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    @Value("${app.mail.resend-api-key:${RESEND_API_KEY:}}")
+    private String resendApiKey;
 
-    @Value("${spring.mail.username:no-reply@cam.local}")
+    @Value("${app.mail.brevo-api-key:${BREVO_API_KEY:}}")
+    private String brevoApiKey;
+
+    @Value("${app.mail.from-email:${CAMS_FROM_EMAIL:${spring.mail.username:onboarding@resend.dev}}}")
     private String fromEmail;
 
-    public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
+    @Value("${app.mail.from-name:${CAMS_FROM_NAME:CAM - Club Accounting & Management}}")
+    private String fromName;
+
+    private final JavaMailSender mailSender;
+    private final ObjectMapper objectMapper;
+    private final HttpClient httpClient;
+
+    public EmailService(
+            @Autowired(required = false) JavaMailSender mailSender,
+            @Autowired(required = false) ObjectMapper objectMapper
+    ) {
         this.mailSender = mailSender;
+        this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
     }
 
     /**
      * Dispatches a 6-digit email verification OTP code with HTML template.
-     * In environments without active SMTP, falls back gracefully to structured server logging.
+     * Supports:
+     * 1. Resend HTTP API (Port 443 - works everywhere, including Render free tier)
+     * 2. Brevo HTTP API (Port 443 - works everywhere, including Render free tier)
+     * 3. Traditional JavaMailSender SMTP (Port 587 - local dev)
+     * 4. Resilient Fallback to Structured Server Console Banner
      */
     public void sendVerificationEmail(String toEmail, String username, String otpCode) {
         String greetingName = (username != null && !username.isBlank()) ? username : "Member";
@@ -57,7 +88,7 @@ public class EmailService {
                 <div class="body-content">
                   <div class="greeting">Hello {{greetingName}},</div>
                   <div class="instruction">
-                    What ra? you want some nice mssg here aa? chumma just copy the code and paste!! 
+                    Please use the following 6-digit verification code to complete your registration on the CAM financial portal.
                   </div>
                   <div class="otp-container">
                     <div class="otp-code">{{otpCode}}</div>
@@ -78,19 +109,29 @@ public class EmailService {
             .replace("{{otpCode}}", otpCode);
 
         boolean emailSent = false;
-        if (mailSender != null) {
-            try {
-                MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-                helper.setFrom(fromEmail, "CAM - Club Accounting & Management");
-                helper.setTo(toEmail);
-                helper.setSubject("CAM Account Verification Code: " + otpCode);
-                helper.setText(htmlContent, true);
-                mailSender.send(message);
-                emailSent = true;
-                log.info("Email verification OTP successfully sent to: {}", toEmail);
-            } catch (Exception ex) {
-                log.warn("Failed to dispatch email via SMTP to {}: {}. Falling back to console log.", toEmail, ex.getMessage());
+        String dispatchChannel = "CONSOLE_LOG_ONLY";
+
+        // 1. Try Resend HTTP API (Port 443 HTTPS)
+        if (resendApiKey != null && !resendApiKey.isBlank()) {
+            emailSent = sendViaResend(toEmail, "CAM Account Verification Code: " + otpCode, htmlContent);
+            if (emailSent) {
+                dispatchChannel = "RESEND_HTTP";
+            }
+        }
+
+        // 2. Try Brevo HTTP API (Port 443 HTTPS)
+        if (!emailSent && brevoApiKey != null && !brevoApiKey.isBlank()) {
+            emailSent = sendViaBrevo(toEmail, "CAM Account Verification Code: " + otpCode, htmlContent);
+            if (emailSent) {
+                dispatchChannel = "BREVO_HTTP";
+            }
+        }
+
+        // 3. Try traditional SMTP (Port 587)
+        if (!emailSent && mailSender != null) {
+            emailSent = sendViaSmtp(toEmail, "CAM Account Verification Code: " + otpCode, htmlContent);
+            if (emailSent) {
+                dispatchChannel = "SMTP";
             }
         }
 
@@ -103,8 +144,97 @@ public class EmailService {
             Code: [{}]
             Recipient: {}
             Validity: 10 Minutes
-            SMTP Dispatched: {}
+            Channel: {}
+            Dispatched: {}
             ================================================================================""",
-            toEmail, otpCode, otpCode, greetingName, emailSent);
+            toEmail, otpCode, otpCode, greetingName, dispatchChannel, emailSent);
+    }
+
+    private boolean sendViaResend(String toEmail, String subject, String htmlContent) {
+        try {
+            String sender = fromEmail != null && !fromEmail.isBlank() ? fromEmail : "onboarding@resend.dev";
+            if (!sender.contains("<")) {
+                sender = fromName + " <" + sender + ">";
+            }
+            Map<String, Object> payload = Map.of(
+                "from", sender,
+                "to", List.of(toEmail),
+                "subject", subject,
+                "html", htmlContent
+            );
+            String json = objectMapper.writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.resend.com/emails"))
+                .header("Authorization", "Bearer " + resendApiKey.trim())
+                .header("Content-Type", "application/json")
+                .timeout(Duration.ofSeconds(15))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("[EMAIL] Verification email sent successfully to {} via Resend HTTP API. Response: {}", toEmail, response.body());
+                return true;
+            } else {
+                log.warn("[EMAIL] Resend HTTP API returned status {}: {}", response.statusCode(), response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            log.warn("[EMAIL] Failed to dispatch email via Resend HTTP API to {}: {}", toEmail, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean sendViaBrevo(String toEmail, String subject, String htmlContent) {
+        try {
+            String senderEmail = fromEmail != null && !fromEmail.isBlank() ? fromEmail : "no-reply@cams.local";
+            Map<String, Object> payload = Map.of(
+                "sender", Map.of("name", fromName, "email", senderEmail),
+                "to", List.of(Map.of("email", toEmail)),
+                "subject", subject,
+                "htmlContent", htmlContent
+            );
+            String json = objectMapper.writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                .header("api-key", brevoApiKey.trim())
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .timeout(Duration.ofSeconds(15))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("[EMAIL] Verification email sent successfully to {} via Brevo HTTP API. Response: {}", toEmail, response.body());
+                return true;
+            } else {
+                log.warn("[EMAIL] Brevo HTTP API returned status {}: {}", response.statusCode(), response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            log.warn("[EMAIL] Failed to dispatch email via Brevo HTTP API to {}: {}", toEmail, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean sendViaSmtp(String toEmail, String subject, String htmlContent) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String sender = fromEmail != null && !fromEmail.isBlank() ? fromEmail : "no-reply@cam.local";
+            helper.setFrom(sender, fromName);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            log.info("[EMAIL] Verification email sent successfully to {} via SMTP", toEmail);
+            return true;
+        } catch (Exception ex) {
+            log.warn("[EMAIL] Failed to dispatch email via SMTP to {}: {}. Falling back to next channel.", toEmail, ex.getMessage());
+            return false;
+        }
     }
 }

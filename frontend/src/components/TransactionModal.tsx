@@ -24,6 +24,7 @@ import {
   UpdateTransactionRequest,
 } from '../types';
 import { documentApi } from '../api/documentApi';
+import { userApi } from '../api/userApi';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   currentUser,
 }) => {
   const isEditing = !!transaction;
+  const isAdmin = Boolean(currentUser?.roles?.includes('ADMIN'));
   const isMember =
     currentUser?.roles?.includes('MEMBER') &&
     !currentUser?.roles?.includes('ADMIN') &&
@@ -52,6 +54,28 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   // Fixed Payer: current authenticated user's name
   const fixedPayerName = currentUser?.fullName || currentUser?.email || 'Logged In User';
+
+  const [registeredUsers, setRegisteredUsers] = useState<Array<{ id: string; name: string }>>([]);
+
+  // Fetch approved registered users for admin payer suggestions
+  useEffect(() => {
+    if (isAdmin && isOpen) {
+      userApi
+        .getAllUsers()
+        .then((users) => {
+          const list = users
+            .filter((u) => u.approvalStatus === 'APPROVED' && !u.deleted)
+            .map((u) => ({
+              id: u.id,
+              name: u.fullName?.trim() || u.username,
+            }));
+          setRegisteredUsers(list);
+        })
+        .catch(() => {
+          // Graceful fallback if user directory fails
+        });
+    }
+  }, [isAdmin, isOpen]);
 
   // Primary fields (Top section)
   const [amount, setAmount] = useState<string>('');
@@ -89,6 +113,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [fieldErrors, setFieldErrors] = useState<{
     amount?: string;
     recipientTo?: string;
+    payerFrom?: string;
     categoryId?: string;
     paymentMode?: string;
     transactionDate?: string;
@@ -229,6 +254,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     const errors: {
       amount?: string;
       recipientTo?: string;
+      payerFrom?: string;
       categoryId?: string;
       paymentMode?: string;
       transactionDate?: string;
@@ -243,6 +269,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
     if (!recipientTo.trim()) {
       errors.recipientTo = 'Recipient (To) name is required';
+    }
+
+    // Payer validation: System admin can write/select any custom name; others use fixed account name
+    const finalPayerFrom = (isAdmin ? payerFrom.trim() : fixedPayerName).trim();
+    if (isAdmin && !finalPayerFrom) {
+      errors.payerFrom = 'Payer / Sender name is required';
     }
 
     if (!categoryId) {
@@ -281,6 +313,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setError('Payment Screenshot is mandatory. Please upload the payment/UPI receipt.');
       } else if (!hasBill) {
         setError('Bill / Invoice Document is mandatory. Please upload the bill image or PDF.');
+      } else if (errors.payerFrom) {
+        setError('Payer / Sender name is required.');
       } else {
         setError('Please fill in all mandatory fields highlighted below.');
       }
@@ -315,7 +349,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         transactionDate,
         transactionType: isMember ? 'OUT' : transactionType,
         amount: parsedAmount,
-        payerFrom: fixedPayerName.trim(), // Fixed to authenticated user
+        payerFrom: finalPayerFrom,
         recipientTo: recipientTo.trim(),
         categoryId,
         paymentMode,
@@ -1235,9 +1269,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               </div>
             </div>
 
-            {/* Row: Payer (Fixed & Non-Editable) & Invoice Status */}
+            {/* Row: Payer (From) & Invoice Status */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
-              {/* Payer (From) - Strictly Fixed to Logged-in User */}
+              {/* Payer (From) - Editable ONLY by System Admin; Strictly locked for others */}
               <div>
                 <label
                   style={{
@@ -1250,51 +1284,122 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     marginBottom: '0.35rem',
                   }}
                 >
-                  <span>Payer (From) *</span>
-                  <span
-                    className="badge"
-                    style={{
-                      fontSize: '0.65rem',
-                      padding: '0.1rem 0.4rem',
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      color: 'var(--text-muted)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.2rem',
-                    }}
-                  >
-                    <Lock size={10} />
-                    Non-Editable
-                  </span>
+                  <span>Payer / Sender (From) *</span>
+                  {isAdmin ? (
+                    <span
+                      className="badge"
+                      style={{
+                        fontSize: '0.65rem',
+                        padding: '0.1rem 0.45rem',
+                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                        color: '#10b981',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.2rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      Admin Editable
+                    </span>
+                  ) : (
+                    <span
+                      className="badge"
+                      style={{
+                        fontSize: '0.65rem',
+                        padding: '0.1rem 0.4rem',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        color: 'var(--text-muted)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.2rem',
+                      }}
+                    >
+                      <Lock size={10} />
+                      Non-Editable
+                    </span>
+                  )}
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={payerFrom}
-                    readOnly
-                    disabled
-                    style={{
-                      height: '2.5rem',
-                      fontSize: 'var(--font-size-sm)',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      color: 'var(--text-primary)',
-                      cursor: 'not-allowed',
-                      opacity: 0.85,
-                      paddingRight: '2rem',
-                    }}
-                  />
-                  <Lock
-                    size={14}
-                    style={{
-                      position: 'absolute',
-                      right: '0.75rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: 'var(--text-muted)',
-                    }}
-                  />
+                  {isAdmin ? (
+                    <>
+                      <input
+                        type="text"
+                        className="form-input"
+                        list="admin-payer-options"
+                        value={payerFrom}
+                        onChange={(e) => {
+                          setPayerFrom(e.target.value);
+                          if (fieldErrors.payerFrom) {
+                            setFieldErrors((prev) => ({ ...prev, payerFrom: undefined }));
+                          }
+                        }}
+                        placeholder="Type or select payer/sender name"
+                        style={{
+                          height: '2.5rem',
+                          fontSize: 'var(--font-size-sm)',
+                          borderColor: fieldErrors.payerFrom ? '#ef4444' : undefined,
+                        }}
+                      />
+                      <datalist id="admin-payer-options">
+                        {fixedPayerName && (
+                          <option value={fixedPayerName}>{fixedPayerName} (Current Admin)</option>
+                        )}
+                        {registeredUsers.map((u) => (
+                          <option key={u.id} value={u.name} />
+                        ))}
+                        <option value="Club Treasury" />
+                        <option value="College Cashier / Accounts" />
+                        <option value="External Sponsor" />
+                        <option value="Student Council" />
+                      </datalist>
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={fixedPayerName}
+                        readOnly
+                        disabled
+                        style={{
+                          height: '2.5rem',
+                          fontSize: 'var(--font-size-sm)',
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          color: 'var(--text-primary)',
+                          cursor: 'not-allowed',
+                          opacity: 0.85,
+                          paddingRight: '2rem',
+                        }}
+                      />
+                      <Lock
+                        size={14}
+                        style={{
+                          position: 'absolute',
+                          right: '0.75rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          color: 'var(--text-muted)',
+                        }}
+                      />
+                    </>
+                  )}
                 </div>
+                {isAdmin ? (
+                  <div
+                    style={{
+                      fontSize: '0.7rem',
+                      color: fieldErrors.payerFrom ? '#ef4444' : 'var(--text-muted)',
+                      marginTop: '0.25rem',
+                    }}
+                  >
+                    {fieldErrors.payerFrom ||
+                      'As System Admin, you can write any custom payer name or select from registered members.'}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                    Fixed to your authenticated account. Only System Admins can customize the sender name.
+                  </div>
+                )}
               </div>
 
               {/* Invoice Status */}

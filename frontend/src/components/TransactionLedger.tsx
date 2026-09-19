@@ -1139,7 +1139,6 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                             title="View Payment Screenshot"
                           >
                             <Eye size={13} />
-                            <span>View</span>
                           </button>
                         ) : (
                           <span
@@ -1185,7 +1184,6 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                             title="View Bill Document"
                           >
                             <Eye size={13} />
-                            <span>View</span>
                           </button>
                         ) : (
                           <span

@@ -191,10 +191,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Filter categories matching current transaction type
-  const availableCategories = categories.filter(
-    (c) => c.type === 'BOTH' || (transactionType === 'IN' ? c.type === 'INCOME' : c.type === 'EXPENSE')
-  );
+  // Filter categories: Admin sees all categories (including income ones); members see filtered by transaction type
+  const availableCategories = isAdmin
+    ? categories
+    : categories.filter(
+        (c) => c.type === 'BOTH' || (transactionType === 'IN' ? c.type === 'INCOME' : c.type === 'EXPENSE')
+      );
 
   // Auto-sync invoice status based on bill upload
   const handleSetBillFile = (file: File | null) => {
@@ -682,7 +684,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   onChange={(e) => {
                     const newType = e.target.value as TransactionType;
                     setTransactionType(newType);
-                    setCategoryId('');
+                    if (!isAdmin) {
+                      setCategoryId('');
+                    }
                   }}
                   disabled={isMember}
                   style={{ height: '2.65rem', fontSize: 'var(--font-size-sm)', fontWeight: 600 }}
@@ -709,8 +713,19 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   className="form-input"
                   value={categoryId}
                   onChange={(e) => {
-                    setCategoryId(e.target.value);
+                    const selectedId = e.target.value;
+                    setCategoryId(selectedId);
                     if (fieldErrors.categoryId) setFieldErrors((prev) => ({ ...prev, categoryId: undefined }));
+
+                    // If category is INCOME and current type is OUT, auto-select IN
+                    const chosen = categories.find((c) => c.id === selectedId);
+                    if (chosen) {
+                      if (chosen.type === 'INCOME' && transactionType === 'OUT') {
+                        setTransactionType('IN');
+                      } else if (chosen.type === 'EXPENSE' && transactionType === 'IN') {
+                        setTransactionType('OUT');
+                      }
+                    }
                   }}
                   style={{
                     height: '2.65rem',

@@ -102,7 +102,9 @@ public class TransactionService {
         if (!category.isActive()) {
             throw new IllegalArgumentException("Category '" + category.getName() + "' is inactive and cannot be used");
         }
-        validateCategoryType(category, transactionType);
+        if (!canCreateAny) {
+            validateCategoryType(category, transactionType);
+        }
 
         // Validate & Retrieve Payment Mode
         PaymentMode paymentMode = paymentModeRepository.findByCodeIgnoreCase(request.getPaymentMode())
@@ -319,7 +321,9 @@ public class TransactionService {
         if (!category.isActive()) {
             throw new IllegalArgumentException("Category '" + category.getName() + "' is inactive and cannot be used");
         }
-        validateCategoryType(category, updatedType);
+        if (!hasGlobalUpdate) {
+            validateCategoryType(category, updatedType);
+        }
 
         // Validate & Retrieve Payment Mode
         PaymentMode paymentMode = paymentModeRepository.findByCodeIgnoreCase(request.getPaymentMode())

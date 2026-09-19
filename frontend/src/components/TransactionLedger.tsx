@@ -580,16 +580,13 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                           <span
                             style={{
                               ...getCategoryBadgeStyle(txn.category?.name),
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.3rem',
+                              display: 'inline-block',
                               padding: '0.12rem 0.45rem',
                               borderRadius: '5px',
                               fontSize: '0.7rem',
                               fontWeight: 600,
                             }}
                           >
-                            <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'currentColor' }} />
                             {txn.category?.name || 'General'}
                           </span>
                         </div>
@@ -1004,8 +1001,7 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                                   setPage(0);
                                 }}
                               >
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: badgeStyle.color }} />
+                                <span style={{ color: badgeStyle.color, fontWeight: 500 }}>
                                   {c.name}
                                 </span>
                                 {categoryFilter === c.id && <Check size={14} style={{ color: 'var(--accent-primary)' }} />}
@@ -1100,9 +1096,7 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                         <span
                           style={{
                             ...getCategoryBadgeStyle(txn.category?.name),
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.35rem',
+                            display: 'inline-block',
                             padding: '0.2rem 0.55rem',
                             borderRadius: '6px',
                             fontSize: '0.75rem',
@@ -1111,15 +1105,6 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          <span
-                            style={{
-                              width: '6px',
-                              height: '6px',
-                              borderRadius: '50%',
-                              backgroundColor: 'currentColor',
-                              flexShrink: 0,
-                            }}
-                          />
                           {txn.category?.name || '—'}
                         </span>
                       </td>

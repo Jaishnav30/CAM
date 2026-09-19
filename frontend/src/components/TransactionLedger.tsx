@@ -41,6 +41,73 @@ import { ArchiveModal } from './ArchiveModal';
 import { DocumentModal } from './DocumentModal';
 import { useDialog } from '../context/DialogContext';
 
+export const getCategoryBadgeStyle = (categoryName?: string) => {
+  if (!categoryName) {
+    return {
+      color: '#94a3b8',
+      backgroundColor: 'rgba(148, 163, 184, 0.1)',
+      border: '1px solid rgba(148, 163, 184, 0.25)',
+    };
+  }
+
+  const normalized = categoryName.trim().toLowerCase();
+
+  if (normalized.includes('deco')) {
+    return {
+      color: '#c084fc', // purple / violet
+      backgroundColor: 'rgba(192, 132, 252, 0.12)',
+      border: '1px solid rgba(192, 132, 252, 0.35)',
+    };
+  }
+  if (normalized.includes('collection')) {
+    return {
+      color: '#34d399', // emerald / mint
+      backgroundColor: 'rgba(52, 211, 153, 0.12)',
+      border: '1px solid rgba(52, 211, 153, 0.35)',
+    };
+  }
+  if (normalized.includes('event')) {
+    return {
+      color: '#fb923c', // orange / coral
+      backgroundColor: 'rgba(251, 146, 60, 0.12)',
+      border: '1px solid rgba(251, 146, 60, 0.35)',
+    };
+  }
+  if (normalized.includes('sponsor')) {
+    return {
+      color: '#60a5fa', // blue / sky
+      backgroundColor: 'rgba(96, 165, 250, 0.12)',
+      border: '1px solid rgba(96, 165, 250, 0.35)',
+    };
+  }
+  if (normalized.includes('market')) {
+    return {
+      color: '#f472b6', // pink / rose
+      backgroundColor: 'rgba(244, 114, 182, 0.12)',
+      border: '1px solid rgba(244, 114, 182, 0.35)',
+    };
+  }
+
+  // Fallback palettes for any other / future categories
+  const fallbacks = [
+    { color: '#2dd4bf', bg: 'rgba(45, 212, 191, 0.12)', border: 'rgba(45, 212, 191, 0.35)' },
+    { color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.12)', border: 'rgba(167, 139, 250, 0.35)' },
+    { color: '#facc15', bg: 'rgba(250, 204, 21, 0.12)', border: 'rgba(250, 204, 21, 0.35)' },
+    { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.12)', border: 'rgba(56, 189, 248, 0.35)' },
+    { color: '#fb7185', bg: 'rgba(251, 113, 133, 0.12)', border: 'rgba(251, 113, 133, 0.35)' },
+  ];
+  let hash = 0;
+  for (let i = 0; i < normalized.length; i++) {
+    hash = (hash << 5) - hash + normalized.charCodeAt(i);
+  }
+  const selected = fallbacks[Math.abs(hash) % fallbacks.length];
+  return {
+    color: selected.color,
+    backgroundColor: selected.bg,
+    border: `1px solid ${selected.border}`,
+  };
+};
+
 interface TransactionLedgerProps {
   currentUser: AuthUser | null;
 }
@@ -510,12 +577,20 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>
+                          <span
+                            style={{
+                              ...getCategoryBadgeStyle(txn.category?.name),
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              padding: '0.12rem 0.45rem',
+                              borderRadius: '5px',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                            }}
+                          >
+                            <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'currentColor' }} />
                             {txn.category?.name || 'General'}
-                          </span>
-                          <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>•</span>
-                          <span className="badge badge-info" style={{ fontSize: '0.68rem', padding: '0.12rem 0.35rem' }}>
-                            {txn.paymentMode?.code || '—'}
                           </span>
                         </div>
 
@@ -909,124 +984,39 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                             <span>All Categories</span>
                             {categoryFilter === '' && <Check size={14} style={{ color: 'var(--accent-primary)' }} />}
                           </button>
-                          {categories.map((c) => (
-                            <button
-                              key={c.id}
-                              type="button"
-                              className="btn btn-outline"
-                              style={{
-                                justifyContent: 'space-between',
-                                padding: '0.35rem 0.5rem',
-                                fontSize: 'var(--font-size-xs)',
-                                border: 'none',
-                                backgroundColor: categoryFilter === c.id ? 'var(--bg-surface-hover)' : 'transparent',
-                              }}
-                              onClick={() => {
-                                setCategoryFilter(c.id);
-                                setActiveHeaderFilter(null);
-                                setPage(0);
-                              }}
-                            >
-                              <span>{c.name}</span>
-                              {categoryFilter === c.id && <Check size={14} style={{ color: 'var(--accent-primary)' }} />}
-                            </button>
-                          ))}
+                          {categories.map((c) => {
+                            const badgeStyle = getCategoryBadgeStyle(c.name);
+                            return (
+                              <button
+                                key={c.id}
+                                type="button"
+                                className="btn btn-outline"
+                                style={{
+                                  justifyContent: 'space-between',
+                                  padding: '0.35rem 0.5rem',
+                                  fontSize: 'var(--font-size-xs)',
+                                  border: 'none',
+                                  backgroundColor: categoryFilter === c.id ? 'var(--bg-surface-hover)' : 'transparent',
+                                }}
+                                onClick={() => {
+                                  setCategoryFilter(c.id);
+                                  setActiveHeaderFilter(null);
+                                  setPage(0);
+                                }}
+                              >
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: badgeStyle.color }} />
+                                  {c.name}
+                                </span>
+                                {categoryFilter === c.id && <Check size={14} style={{ color: 'var(--accent-primary)' }} />}
+                              </button>
+                            );
+                          })}
                         </div>
                       )}
                     </th>
 
-                    {/* Column 6: Payment Mode (Header Filter) */}
-                    <th style={{ position: 'relative', whiteSpace: 'nowrap' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <span>Payment Mode</span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveHeaderFilter(activeHeaderFilter === 'mode' ? null : 'mode');
-                          }}
-                          style={{
-                            padding: '0.2rem',
-                            borderRadius: 'var(--radius-sm)',
-                            color: paymentModeFilter ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                            backgroundColor: paymentModeFilter ? 'var(--accent-primary-subtle)' : 'transparent',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                          }}
-                          title="Filter by Payment Mode"
-                        >
-                          <Filter size={12} />
-                        </button>
-                      </div>
-
-                      {/* Payment Mode Filter Popover */}
-                      {activeHeaderFilter === 'mode' && (
-                        <div
-                          ref={filterDropdownRef}
-                          style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: 0,
-                            marginTop: '0.25rem',
-                            zIndex: 100,
-                            minWidth: '150px',
-                            backgroundColor: 'var(--bg-surface-elevated)',
-                            border: '1px solid var(--border-default)',
-                            borderRadius: 'var(--radius-md)',
-                            boxShadow: 'var(--shadow-lg)',
-                            padding: '0.5rem',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.25rem',
-                          }}
-                        >
-                          <button
-                            type="button"
-                            className="btn btn-outline"
-                            style={{
-                              justifyContent: 'space-between',
-                              padding: '0.35rem 0.5rem',
-                              fontSize: 'var(--font-size-xs)',
-                              border: 'none',
-                              backgroundColor: paymentModeFilter === '' ? 'var(--bg-surface-hover)' : 'transparent',
-                            }}
-                            onClick={() => {
-                              setPaymentModeFilter('');
-                              setActiveHeaderFilter(null);
-                              setPage(0);
-                            }}
-                          >
-                            <span>All Modes</span>
-                            {paymentModeFilter === '' && <Check size={14} style={{ color: 'var(--accent-primary)' }} />}
-                          </button>
-                          {paymentModes.map((pm) => (
-                            <button
-                              key={pm.id}
-                              type="button"
-                              className="btn btn-outline"
-                              style={{
-                                justifyContent: 'space-between',
-                                padding: '0.35rem 0.5rem',
-                                fontSize: 'var(--font-size-xs)',
-                                border: 'none',
-                                backgroundColor: paymentModeFilter === pm.code ? 'var(--bg-surface-hover)' : 'transparent',
-                              }}
-                              onClick={() => {
-                                setPaymentModeFilter(pm.code);
-                                setActiveHeaderFilter(null);
-                                setPage(0);
-                              }}
-                            >
-                              <span>{pm.name} ({pm.code})</span>
-                              {paymentModeFilter === pm.code && <Check size={14} style={{ color: 'var(--accent-primary)' }} />}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </th>
-
-                    {/* Column 7: Amount (Sortable) */}
+                    {/* Column 6: Amount (Sortable) */}
                     <th style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <button
                         type="button"
@@ -1050,31 +1040,28 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                       </button>
                     </th>
 
-                    {/* Column 8: Screenshot (Icon Header) */}
+                    {/* Column 7: Screenshot (Icon Header) */}
                     <th style={{ textAlign: 'center', width: '82px', whiteSpace: 'nowrap' }} title="Payment Screenshot">
                       <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                         <ImageIcon size={16} />
                       </div>
                     </th>
 
-                    {/* Column 9: Bill / Invoice (Icon Header) */}
+                    {/* Column 8: Bill / Invoice (Icon Header) */}
                     <th style={{ textAlign: 'center', width: '82px', whiteSpace: 'nowrap' }} title="Bill / Invoice Document">
                       <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                         <Receipt size={16} />
                       </div>
                     </th>
 
-                    {/* Column 10: Status (Display only, no filter) */}
-                    <th>Status</th>
-
-                    {/* Column 11: Actions */}
+                    {/* Column 9: Actions */}
                     <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.length === 0 ? (
                     <tr>
-                      <td colSpan={11} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                      <td colSpan={9} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                           <Search size={36} style={{ margin: '0 auto 1rem', opacity: 0.5, color: 'var(--text-secondary)' }} />
                           <h3 style={{ fontSize: 'var(--font-size-lg)', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>No Transactions Found</h3>
@@ -1110,12 +1097,31 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                         <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>From: {txn.payerFrom}</div>
                       </td>
                       <td>
-                        <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>
+                        <span
+                          style={{
+                            ...getCategoryBadgeStyle(txn.category?.name),
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.01em',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              backgroundColor: 'currentColor',
+                              flexShrink: 0,
+                            }}
+                          />
                           {txn.category?.name || '—'}
                         </span>
-                      </td>
-                      <td>
-                        <span className="badge badge-info">{txn.paymentMode?.code || '—'}</span>
                       </td>
                       <td style={{ textAlign: 'right', fontWeight: 700, fontSize: 'var(--font-size-base)' }}>
                         <span style={{ color: txn.transactionType === 'IN' ? 'var(--color-income)' : 'var(--text-primary)' }}>
@@ -1123,7 +1129,7 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                         </span>
                       </td>
 
-                      {/* Column 8: Screenshot Direct View Button or NA */}
+                      {/* Column 7: Screenshot Direct View Button or NA */}
                       <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                         {txn.screenshotDocumentId ? (
                           <button
@@ -1169,7 +1175,7 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                         )}
                       </td>
 
-                      {/* Column 9: Bill Direct View Button or NA */}
+                      {/* Column 8: Bill Direct View Button or NA */}
                       <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                         {txn.billDocumentId ? (
                           <button
@@ -1213,25 +1219,6 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                             NA
                           </span>
                         )}
-                      </td>
-
-                      <td>
-                        <span
-                          className={`badge ${
-                            txn.status === 'COMPLETED'
-                              ? 'badge-success'
-                              : txn.status === 'ARCHIVED'
-                              ? 'badge'
-                              : 'badge-warning'
-                          }`}
-                          style={
-                            txn.status === 'ARCHIVED'
-                              ? { backgroundColor: 'rgba(107, 114, 128, 0.2)', color: 'var(--text-muted)' }
-                              : {}
-                          }
-                        >
-                          {txn.status}
-                        </span>
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '0.5rem' }}>

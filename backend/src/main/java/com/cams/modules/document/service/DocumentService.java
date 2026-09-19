@@ -29,6 +29,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -125,10 +126,9 @@ public class DocumentService {
             throw ex;
         }
 
-        // 4. Prepare target storage destination
-        LocalDate now = LocalDate.now();
-        String relativeDir = String.format("%04d/%02d", now.getYear(), now.getMonthValue());
-        String storedFilename = UUID.randomUUID().toString() + "." + metadata.normalizedExtension();
+        // 4. Prepare target storage destination day-wise: uploads/yyyy-MM-dd/<subfolder>/txn_no_comments.ext
+        String relativeDir = resolveRelativeDir(documentType, transaction);
+        String storedFilename = generateStoredFilename(documentType, transaction, metadata.normalizedExtension(), relativeDir);
         String filePath = relativeDir + "/" + storedFilename;
 
         // 5. Register TransactionSynchronization for afterCommit promotion and rollback cleanup
@@ -288,5 +288,60 @@ public class DocumentService {
         int dotIndex = filename.lastIndexOf('.');
         if (dotIndex < 0 || dotIndex == filename.length() - 1) return "";
         return filename.substring(dotIndex + 1).trim();
+    }
+
+    private String resolveRelativeDir(DocumentType documentType, Transaction transaction) {
+        LocalDate date = transaction.getTransactionDate() != null ? transaction.getTransactionDate() : LocalDate.now();
+        String dateFolder = date.toString(); // e.g. "2026-09-01"
+
+        String typeFolder;
+        if (documentType == DocumentType.PAYMENT_SCREENSHOT) {
+            typeFolder = "screenshots";
+        } else if (documentType == DocumentType.BILL) {
+            typeFolder = "bill_images";
+        } else {
+            typeFolder = "other_documents";
+        }
+
+        return dateFolder + "/" + typeFolder;
+    }
+
+    private String generateStoredFilename(DocumentType documentType, Transaction transaction, String extension, String relativeDir) {
+        String txnNo = "txn";
+        if (transaction.getTransactionNumber() != null && !transaction.getTransactionNumber().isBlank()) {
+            txnNo = transaction.getTransactionNumber().toLowerCase()
+                    .replaceAll("[^a-z0-9]", "_")
+                    .replaceAll("_+", "_")
+                    .replaceAll("^_|_$", "");
+        } else if (transaction.getId() != null) {
+            txnNo = "txn_" + transaction.getId().toString().substring(0, 8);
+        }
+
+        String sanitizedComments = "";
+        if (transaction.getComments() != null && !transaction.getComments().isBlank()) {
+            sanitizedComments = transaction.getComments().toLowerCase()
+                    .replaceAll("[^a-z0-9]", "_")
+                    .replaceAll("_+", "_")
+                    .replaceAll("^_|_$", "");
+            if (sanitizedComments.length() > 50) {
+                sanitizedComments = sanitizedComments.substring(0, 50).replaceAll("_$", "");
+            }
+        }
+
+        String baseName = !sanitizedComments.isBlank() ? (txnNo + "_" + sanitizedComments) : txnNo;
+        String ext = (extension != null && !extension.isBlank()) ? extension : "bin";
+
+        Path targetDir = storageService.getRootLocation().resolve(relativeDir).normalize();
+        String candidate = baseName + "." + ext;
+        Path candidatePath = targetDir.resolve(candidate).normalize();
+
+        int counter = 1;
+        while (Files.exists(candidatePath)) {
+            candidate = baseName + "_" + counter + "." + ext;
+            candidatePath = targetDir.resolve(candidate).normalize();
+            counter++;
+        }
+
+        return candidate;
     }
 }

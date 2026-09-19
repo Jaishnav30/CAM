@@ -482,3 +482,126 @@ select.form-input option {
     overflow: visible;
   }
 }
+
+/* ========================================================================= */
+/* FinTech Card Analytics Dashboard Theme (Dribbble/Jago Inspired)           */
+/* ========================================================================= */
+.fintech-dashboard-wrapper {
+  background-color: #f1f4f9;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+  display: flex;
+  min-height: 820px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1e293b;
+}
+
+.fintech-sidebar {
+  width: 72px;
+  background-color: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.fintech-sidebar-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fintech-sidebar-icon:hover {
+  color: #64748b;
+  background-color: #f8fafc;
+}
+
+.fintech-sidebar-icon.active {
+  color: #f43f5e;
+  background-color: #fff1f2;
+}
+
+.fintech-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 1.35rem 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035), 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fintech-card-elevated {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 1.35rem 1.5rem;
+  box-shadow: 0 22px 42px -6px rgba(0, 0, 0, 0.09), 0 2px 4px rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
+  position: relative;
+  z-index: 2;
+}
+
+.floating-visa-card {
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 55%, #1d4ed8 100%);
+  border-radius: 18px;
+  color: #ffffff;
+  padding: 1.5rem;
+  box-shadow: 0 24px 44px -8px rgba(37, 99, 235, 0.42);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.floating-visa-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 28px 50px -6px rgba(37, 99, 235, 0.5);
+}
+
+.floating-visa-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+.emv-chip {
+  width: 36px;
+  height: 27px;
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  border-radius: 5px;
+  position: relative;
+  border: 1px solid #b45309;
+}
+
+.emv-chip::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+@media (max-width: 1024px) {
+  .fintech-dashboard-wrapper {
+    flex-direction: column;
+  }
+  .fintech-sidebar {
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+    padding: 0.5rem 1.5rem;
+  }
+}

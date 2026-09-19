@@ -840,7 +840,12 @@ export const App: React.FC = () => {
             <div>
               {activeTab === 'transactions' && <TransactionLedger currentUser={currentUser} />}
               {activeTab === 'reimbursements' && <ReimbursementList currentUser={currentUser} />}
-              {activeTab === 'analytics' && canViewAnalytics && <AnalyticsDashboard />}
+              {activeTab === 'analytics' && canViewAnalytics && (
+                <AnalyticsDashboard
+                  currentUser={currentUser}
+                  onNavigateTab={(tab: string) => setActiveTab(tab as any)}
+                />
+              )}
               {activeTab === 'reports' && canViewReports && <ReportsManager />}
               {activeTab === 'audit-logs' && canViewAuditLogs && <AuditLogViewer />}
               {activeTab === 'categories' && isAdmin && <CategoryManager />}

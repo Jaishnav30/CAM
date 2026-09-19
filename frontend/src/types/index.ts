@@ -181,6 +181,8 @@ export interface Transaction {
   createdBy: UserSummary;
   createdAt: string;
   updatedAt: string;
+  screenshotDocumentId?: string;
+  billDocumentId?: string;
 }
 
 export interface CreateTransactionRequest {

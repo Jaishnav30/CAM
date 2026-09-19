@@ -39,6 +39,8 @@ public class TransactionResponse {
     private UserSummaryResponse createdBy;
     private Instant createdAt;
     private Instant updatedAt;
+    private UUID screenshotDocumentId;
+    private UUID billDocumentId;
 
     public static TransactionResponse fromEntity(Transaction transaction) {
         if (transaction == null) {

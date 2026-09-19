@@ -8,6 +8,9 @@ import com.cams.modules.audit.service.AuditLogService;
 import com.cams.modules.category.model.Category;
 import com.cams.modules.category.model.CategoryType;
 import com.cams.modules.category.repository.CategoryRepository;
+import com.cams.modules.document.model.Document;
+import com.cams.modules.document.model.DocumentType;
+import com.cams.modules.document.repository.DocumentRepository;
 import com.cams.modules.paymentmode.model.PaymentMode;
 import com.cams.modules.paymentmode.repository.PaymentModeRepository;
 import com.cams.modules.reimbursement.model.ReimbursementStatus;
@@ -36,7 +39,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +57,7 @@ public class TransactionService {
     private final AuditLogService auditLogService;
     private final ReimbursementRepository reimbursementRepository;
     private final ReimbursementService reimbursementService;
+    private final DocumentRepository documentRepository;
 
     @Transactional
     public TransactionResponse createTransaction(
@@ -205,7 +213,27 @@ public class TransactionService {
         Pageable safePageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Transaction> page = transactionRepository.findAll(spec, safePageable);
 
-        return PagedResponse.of(page.map(TransactionResponse::fromEntity));
+        List<UUID> ids = page.getContent().stream().map(Transaction::getId).toList();
+        Map<UUID, List<Document>> docsByTxn = ids.isEmpty() ? Collections.emptyMap() :
+                documentRepository.findByTransactionIdInAndDeletedAtIsNull(ids).stream()
+                        .collect(Collectors.groupingBy(d -> d.getTransaction().getId()));
+
+        Page<TransactionResponse> responsePage = page.map(txn -> {
+            TransactionResponse resp = TransactionResponse.fromEntity(txn);
+            List<Document> docs = docsByTxn.get(txn.getId());
+            if (docs != null) {
+                for (Document d : docs) {
+                    if (d.getDocumentType() == DocumentType.PAYMENT_SCREENSHOT && resp.getScreenshotDocumentId() == null) {
+                        resp.setScreenshotDocumentId(d.getId());
+                    } else if (d.getDocumentType() == DocumentType.BILL && resp.getBillDocumentId() == null) {
+                        resp.setBillDocumentId(d.getId());
+                    }
+                }
+            }
+            return resp;
+        });
+
+        return PagedResponse.of(responsePage);
     }
 
     @Transactional(readOnly = true)
@@ -227,7 +255,9 @@ public class TransactionService {
             }
         }
 
-        return TransactionResponse.fromEntity(transaction);
+        TransactionResponse resp = TransactionResponse.fromEntity(transaction);
+        populateDocumentIds(resp, id);
+        return resp;
     }
 
     @Transactional
@@ -320,6 +350,9 @@ public class TransactionService {
         Transaction updated = transactionRepository.save(transaction);
         log.info("Transaction '{}' updated by user '{}'", updated.getTransactionNumber(), currentUser.getUsername());
 
+        TransactionResponse updatedResponse = TransactionResponse.fromEntity(updated);
+        populateDocumentIds(updatedResponse, updated.getId());
+
         auditLogService.recordAudit(
                 "TRANSACTION",
                 updated.getId(),
@@ -327,11 +360,23 @@ public class TransactionService {
                 currentUser.getId(),
                 clientIp,
                 oldState,
-                TransactionResponse.fromEntity(updated),
+                updatedResponse,
                 "Transaction updated: " + updated.getTransactionNumber()
         );
 
-        return TransactionResponse.fromEntity(updated);
+        return updatedResponse;
+    }
+
+    private void populateDocumentIds(TransactionResponse resp, UUID transactionId) {
+        if (resp == null || transactionId == null) return;
+        List<Document> docs = documentRepository.findByTransactionIdAndDeletedAtIsNullOrderByCreatedAtDesc(transactionId);
+        for (Document d : docs) {
+            if (d.getDocumentType() == DocumentType.PAYMENT_SCREENSHOT && resp.getScreenshotDocumentId() == null) {
+                resp.setScreenshotDocumentId(d.getId());
+            } else if (d.getDocumentType() == DocumentType.BILL && resp.getBillDocumentId() == null) {
+                resp.setBillDocumentId(d.getId());
+            }
+        }
     }
 
     @Transactional

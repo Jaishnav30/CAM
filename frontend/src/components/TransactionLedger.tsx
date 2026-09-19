@@ -15,10 +15,17 @@ import {
   ArrowUpDown,
   Check,
   Paperclip,
+  Eye,
+  Image as ImageIcon,
+  Receipt,
+  X,
+  Download,
+  Loader2,
 } from 'lucide-react';
 import { transactionApi } from '../api/transactionApi';
 import { categoryApi } from '../api/categoryApi';
 import { paymentModeApi } from '../api/paymentModeApi';
+import { documentApi } from '../api/documentApi';
 import {
   AuthUser,
   Category,
@@ -89,6 +96,58 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
   const [archivingTxn, setArchivingTxn] = useState<Transaction | null>(null);
   const [isDocModalOpen, setIsDocModalOpen] = useState<boolean>(false);
   const [docTxn, setDocTxn] = useState<Transaction | null>(null);
+
+  // Direct Preview Modal state (for screenshot & bill columns)
+  const [directPreview, setDirectPreview] = useState<{
+    isOpen: boolean;
+    docId: string;
+    title: string;
+    url?: string;
+    contentType?: string;
+    loading: boolean;
+    error?: string | null;
+  } | null>(null);
+
+  const handleViewDirectDocument = async (docId: string, title: string) => {
+    setDirectPreview({
+      isOpen: true,
+      docId,
+      title,
+      loading: true,
+      error: null,
+    });
+    try {
+      const { url, contentType } = await documentApi.getPreviewBlobUrl(docId);
+      setDirectPreview((prev) => (prev ? { ...prev, url, contentType, loading: false } : null));
+    } catch (err: unknown) {
+      setDirectPreview((prev) =>
+        prev
+          ? {
+              ...prev,
+              loading: false,
+              error: err instanceof Error ? err.message : 'Failed to load document preview',
+            }
+          : null
+      );
+    }
+  };
+
+  const handleCloseDirectPreview = () => {
+    if (directPreview?.url) {
+      URL.revokeObjectURL(directPreview.url);
+    }
+    setDirectPreview(null);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && directPreview?.isOpen) {
+        handleCloseDirectPreview();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [directPreview?.isOpen]);
 
   const canArchive = currentUser?.permissions?.includes('transactions:archive') || currentUser?.roles?.includes('ADMIN');
   const isMemberOnly = currentUser?.roles?.includes('MEMBER') && !currentUser?.roles?.includes('ADMIN') && !currentUser?.roles?.includes('ACCOUNTANT');
@@ -524,6 +583,42 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                           <div><strong style={{ color: 'var(--text-muted)' }}>Status:</strong> {txn.status}</div>
                           {txn.referenceNumber && <div><strong style={{ color: 'var(--text-muted)' }}>Ref:</strong> {txn.referenceNumber}</div>}
                           {txn.comments && <div><strong style={{ color: 'var(--text-muted)' }}>Comments:</strong> {txn.comments}</div>}
+
+                          {/* Direct Document Quick Links in Mobile */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginTop: '0.2rem', paddingTop: '0.4rem', borderTop: '1px dashed var(--border-default)' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <ImageIcon size={13} style={{ color: 'var(--text-muted)' }} />
+                              <span style={{ color: 'var(--text-muted)' }}>Screenshot:</span>
+                              {txn.screenshotDocumentId ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-outline"
+                                  style={{ padding: '0.15rem 0.45rem', fontSize: '0.72rem', color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                                  onClick={() => handleViewDirectDocument(txn.screenshotDocumentId!, `Screenshot - ${txn.transactionNumber}`)}
+                                >
+                                  <Eye size={12} /> View
+                                </button>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>NA</span>
+                              )}
+                            </div>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <Receipt size={13} style={{ color: 'var(--text-muted)' }} />
+                              <span style={{ color: 'var(--text-muted)' }}>Bill:</span>
+                              {txn.billDocumentId ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-outline"
+                                  style={{ padding: '0.15rem 0.45rem', fontSize: '0.72rem', color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                                  onClick={() => handleViewDirectDocument(txn.billDocumentId!, `Bill - ${txn.transactionNumber}`)}
+                                >
+                                  <Eye size={12} /> View
+                                </button>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>NA</span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -904,17 +999,31 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                       </button>
                     </th>
 
-                    {/* Column 8: Status (Display only, no filter) */}
+                    {/* Column 8: Screenshot (Icon Header) */}
+                    <th style={{ textAlign: 'center', width: '60px', whiteSpace: 'nowrap' }} title="Payment Screenshot">
+                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                        <ImageIcon size={16} />
+                      </div>
+                    </th>
+
+                    {/* Column 9: Bill / Invoice (Icon Header) */}
+                    <th style={{ textAlign: 'center', width: '60px', whiteSpace: 'nowrap' }} title="Bill / Invoice Document">
+                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                        <Receipt size={16} />
+                      </div>
+                    </th>
+
+                    {/* Column 10: Status (Display only, no filter) */}
                     <th>Status</th>
 
-                    {/* Column 9: Actions */}
+                    {/* Column 11: Actions */}
                     <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.length === 0 ? (
                     <tr>
-                      <td colSpan={9} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                      <td colSpan={11} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                           <Search size={36} style={{ margin: '0 auto 1rem', opacity: 0.5, color: 'var(--text-secondary)' }} />
                           <h3 style={{ fontSize: 'var(--font-size-lg)', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>No Transactions Found</h3>
@@ -962,6 +1071,65 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                           {txn.transactionType === 'IN' ? '+' : '-'}₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </span>
                       </td>
+
+                      {/* Column 8: Screenshot Direct View Button or NA */}
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        {txn.screenshotDocumentId ? (
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{
+                              padding: '0.3rem 0.5rem',
+                              borderRadius: 'var(--radius-sm)',
+                              color: '#38bdf8',
+                              backgroundColor: 'rgba(56, 189, 248, 0.08)',
+                              border: '1px solid rgba(56, 189, 248, 0.3)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => handleViewDirectDocument(txn.screenshotDocumentId!, `Screenshot - ${txn.transactionNumber}`)}
+                            title="View Payment Screenshot"
+                          >
+                            <Eye size={14} />
+                          </button>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>
+                            NA
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Column 9: Bill Direct View Button or NA */}
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        {txn.billDocumentId ? (
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{
+                              padding: '0.3rem 0.5rem',
+                              borderRadius: 'var(--radius-sm)',
+                              color: '#fbbf24',
+                              backgroundColor: 'rgba(251, 191, 36, 0.08)',
+                              border: '1px solid rgba(251, 191, 36, 0.3)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => handleViewDirectDocument(txn.billDocumentId!, `Bill - ${txn.transactionNumber}`)}
+                            title="View Bill Document"
+                          >
+                            <Eye size={14} />
+                          </button>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>
+                            NA
+                          </span>
+                        )}
+                      </td>
+
                       <td>
                         <span
                           className={`badge ${
@@ -1086,6 +1254,142 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
           fetchTransactions();
         }}
       />
+
+      {/* Direct Document Preview Lightbox Modal */}
+      {directPreview?.isOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.82)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '1.25rem',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseDirectPreview();
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--bg-surface-elevated, #111827)',
+              border: '1px solid var(--border-default, rgba(255, 255, 255, 0.12))',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '850px',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75)',
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Lightbox Header */}
+            <div
+              style={{
+                padding: '1rem 1.25rem',
+                borderBottom: '1px solid var(--border-default, rgba(255, 255, 255, 0.08))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(to right, #111827, #1f2937)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#38bdf8',
+                  }}
+                >
+                  <Eye size={17} />
+                </div>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#f9fafb', margin: 0 }}>
+                  {directPreview.title}
+                </h3>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {directPreview.url && (
+                  <a
+                    href={directPreview.url}
+                    download={directPreview.title}
+                    className="btn btn-outline"
+                    style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    title="Download document"
+                  >
+                    <Download size={14} /> Download
+                  </a>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  style={{ padding: '0.35rem 0.5rem', color: 'var(--text-muted)' }}
+                  onClick={handleCloseDirectPreview}
+                  title="Close preview (Esc)"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Lightbox Content Body */}
+            <div
+              style={{
+                padding: '1.25rem',
+                overflowY: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '300px',
+                backgroundColor: '#0a0f1d',
+              }}
+            >
+              {directPreview.loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', color: 'var(--text-muted)' }}>
+                  <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', color: 'var(--accent-primary)' }} />
+                  <span style={{ fontSize: '0.85rem' }}>Loading document preview...</span>
+                </div>
+              ) : directPreview.error ? (
+                <div style={{ textAlign: 'center', color: '#f87171', padding: '2rem' }}>
+                  <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>{directPreview.error}</p>
+                  <button className="btn btn-outline" onClick={handleCloseDirectPreview}>Close</button>
+                </div>
+              ) : directPreview.contentType?.includes('pdf') ? (
+                <iframe
+                  src={directPreview.url}
+                  style={{ width: '100%', height: '70vh', border: 'none', borderRadius: '8px' }}
+                  title={directPreview.title}
+                />
+              ) : (
+                <img
+                  src={directPreview.url}
+                  alt={directPreview.title}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '75vh',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)',
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

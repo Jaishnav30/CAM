@@ -289,31 +289,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       errors.transactionDate = 'Please select a transaction date';
     }
 
-    // Screenshot and bill are mandatory for all transactions
-    const hasScreenshot =
-      !!screenshotFile ||
-      (isEditing && existingDocs.some((d) => d.documentType === 'PAYMENT_SCREENSHOT'));
-    const hasBill =
-      !!billFile ||
-      (isEditing && existingDocs.some((d) => d.documentType === 'BILL'));
-
-    if (!hasScreenshot) {
-      errors.screenshot = 'Payment screenshot is required';
-    }
-
-    if (!hasBill) {
-      errors.bill = 'Bill / invoice document is required';
-    }
-
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      if (!hasScreenshot && !hasBill) {
-        setError('Both Payment Screenshot and Bill / Invoice Document are mandatory.');
-      } else if (!hasScreenshot) {
-        setError('Payment Screenshot is mandatory. Please upload the payment/UPI receipt.');
-      } else if (!hasBill) {
-        setError('Bill / Invoice Document is mandatory. Please upload the bill image or PDF.');
-      } else if (errors.payerFrom) {
+      if (errors.payerFrom) {
         setError('Payer / Sender name is required.');
       } else {
         setError('Please fill in all mandatory fields highlighted below.');
@@ -323,7 +301,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
     setFieldErrors({});
 
-    // Validate staged files
+    // Validate staged files if provided
     if (screenshotFile) {
       const fileErr = validateFile(screenshotFile);
       if (fileErr) {
@@ -754,7 +732,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem', marginTop: '0.6rem' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  Supporting Documents <span style={{ color: '#ef4444', fontWeight: 800 }}>* (Both Required)</span>
+                  Supporting Documents <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>(Optional)</span>
                 </label>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                   PNG, JPG, PDF up to 10MB
@@ -864,10 +842,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <span>Transaction Screenshot</span>
-                        <span style={{ color: '#ef4444', fontWeight: 800 }}>*</span>
                       </div>
                       <div style={{ fontSize: '0.72rem', color: fieldErrors.screenshot ? '#ef4444' : 'var(--text-muted)', fontWeight: fieldErrors.screenshot ? 600 : 400 }}>
-                        {fieldErrors.screenshot || 'UPI receipt/payment confirmation (Mandatory)'}
+                        {fieldErrors.screenshot || 'UPI receipt/payment confirmation (Optional)'}
                       </div>
                     </div>
                   </div>
@@ -1054,10 +1031,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <span>Bill / Invoice Document</span>
-                        <span style={{ color: '#ef4444', fontWeight: 800 }}>*</span>
                       </div>
                       <div style={{ fontSize: '0.72rem', color: fieldErrors.bill ? '#ef4444' : 'var(--text-muted)', fontWeight: fieldErrors.bill ? 600 : 400 }}>
-                        {fieldErrors.bill || 'Store receipt, vendor invoice (Mandatory)'}
+                        {fieldErrors.bill || 'Store receipt, vendor invoice (Optional)'}
                       </div>
                     </div>
                   </div>

@@ -18,4 +18,13 @@ public class CategoryBreakdownDTO {
     private BigDecimal amount;
     private long count;
     private double percentage;
+    private String type;
+
+    public BigDecimal getTotalAmount() {
+        return amount;
+    }
+
+    public long getTransactionCount() {
+        return count;
+    }
 }

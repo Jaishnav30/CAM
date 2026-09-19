@@ -17,4 +17,12 @@ public class PaymentModeBreakdownDTO {
     private BigDecimal amount;
     private long count;
     private double percentage;
+
+    public BigDecimal getTotalAmount() {
+        return amount;
+    }
+
+    public long getTransactionCount() {
+        return count;
+    }
 }

@@ -317,42 +317,68 @@ export interface AnalyticsSummary {
   totalInAmount: number;
   totalOutAmount: number;
   netAmount: number;
+  transactionCount?: number;
+  inTransactionCount?: number;
+  outTransactionCount?: number;
   completedTransactionCount: number;
-  pendingReimbursementCount: number;
-  pendingReimbursementAmount: number;
-  approvedReimbursementCount: number;
-  approvedReimbursementAmount: number;
-  reimbursedReimbursementCount: number;
-  reimbursedReimbursementAmount: number;
+  archivedTransactionCount?: number;
+  reimbursementSubmittedCount?: number;
+  reimbursementApprovedCount?: number;
+  reimbursementRejectedCount?: number;
+  reimbursementReimbursedCount?: number;
+  totalReimbursedAmount?: number;
+  // Aliases for backwards compatibility:
+  pendingReimbursementCount?: number;
+  pendingReimbursementAmount?: number;
+  approvedReimbursementCount?: number;
+  approvedReimbursementAmount?: number;
+  reimbursedReimbursementCount?: number;
+  reimbursedReimbursementAmount?: number;
 }
 
 export interface CategoryBreakdown {
   categoryId: string;
   categoryName: string;
-  type: CategoryType;
-  totalAmount: number;
-  transactionCount: number;
+  amount: number;
+  count: number;
+  percentage: number;
+  type?: string;
+  totalAmount?: number;
+  transactionCount?: number;
 }
 
 export interface PaymentModeBreakdown {
-  paymentModeId: string;
-  paymentModeName: string;
   paymentModeCode: string;
-  totalAmount: number;
-  transactionCount: number;
+  paymentModeName: string;
+  amount: number;
+  count: number;
+  percentage: number;
+  paymentModeId?: string;
+  totalAmount?: number;
+  transactionCount?: number;
 }
 
 export interface TransactionTrend {
-  period: string;
-  totalIn: number;
-  totalOut: number;
-  net: number;
+  date: string;
+  inAmount: number;
+  outAmount: number;
+  inCount: number;
+  outCount: number;
+  period?: string;
+  totalIn?: number;
+  totalOut?: number;
+  net?: number;
 }
 
 export interface AnalyticsBreakdowns {
-  categoryBreakdown: CategoryBreakdown[];
-  paymentModeBreakdown: PaymentModeBreakdown[];
-  trends: TransactionTrend[];
+  expensesByCategory: CategoryBreakdown[];
+  incomeByCategory: CategoryBreakdown[];
+  expensesByPaymentMode: PaymentModeBreakdown[];
+  transactionsOverTime: TransactionTrend[];
+  // Direct aliases from backend getters:
+  categoryBreakdown?: CategoryBreakdown[];
+  paymentModeBreakdown?: PaymentModeBreakdown[];
+  trends?: TransactionTrend[];
 }
 
 export interface AnalyticsFilterParams {

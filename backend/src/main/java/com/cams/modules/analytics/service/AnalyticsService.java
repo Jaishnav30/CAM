@@ -139,6 +139,7 @@ public class AnalyticsService {
                     .amount(amount)
                     .count(row[3] != null ? ((Number) row[3]).longValue() : 0L)
                     .percentage(percentage)
+                    .type("OUT")
                     .build());
         }
 
@@ -174,6 +175,7 @@ public class AnalyticsService {
                     .amount(amount)
                     .count(row[3] != null ? ((Number) row[3]).longValue() : 0L)
                     .percentage(percentage)
+                    .type("IN")
                     .build());
         }
 

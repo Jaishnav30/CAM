@@ -875,7 +875,7 @@ export const App: React.FC = () => {
               flexShrink: 0,
             }}
           >
-            <div>CAM © 2026 • MS Excel Financial Edition</div>
+            <div>CAM © 2026</div>
             <div>PostgreSQL 16 • Spring Boot 3.3.4 • Vite React</div>
           </footer>
         )}

@@ -247,7 +247,6 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
     } else {
       result = await transactionApi.createTransaction(data as CreateTransactionRequest);
     }
-    await fetchTransactions();
     return result;
   };
 
@@ -585,37 +584,89 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                           {txn.comments && <div><strong style={{ color: 'var(--text-muted)' }}>Comments:</strong> {txn.comments}</div>}
 
                           {/* Direct Document Quick Links in Mobile */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginTop: '0.2rem', paddingTop: '0.4rem', borderTop: '1px dashed var(--border-default)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginTop: '0.25rem', paddingTop: '0.45rem', borderTop: '1px dashed var(--border-default)' }}>
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                               <ImageIcon size={13} style={{ color: 'var(--text-muted)' }} />
-                              <span style={{ color: 'var(--text-muted)' }}>Screenshot:</span>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Screenshot:</span>
                               {txn.screenshotDocumentId ? (
                                 <button
                                   type="button"
-                                  className="btn btn-outline"
-                                  style={{ padding: '0.15rem 0.45rem', fontSize: '0.72rem', color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                                  className="btn"
+                                  style={{
+                                    padding: '0.18rem 0.45rem',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 500,
+                                    borderRadius: '5px',
+                                    color: '#38bdf8',
+                                    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                                    border: '1px solid rgba(56, 189, 248, 0.35)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    cursor: 'pointer',
+                                  }}
                                   onClick={() => handleViewDirectDocument(txn.screenshotDocumentId!, `Screenshot - ${txn.transactionNumber}`)}
                                 >
                                   <Eye size={12} /> View
                                 </button>
                               ) : (
-                                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>NA</span>
+                                <span
+                                  style={{
+                                    display: 'inline-block',
+                                    padding: '0.1rem 0.4rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 600,
+                                    color: '#94a3b8',
+                                    backgroundColor: 'rgba(148, 163, 184, 0.08)',
+                                    border: '1px solid rgba(148, 163, 184, 0.16)',
+                                    letterSpacing: '0.04em',
+                                  }}
+                                >
+                                  NA
+                                </span>
                               )}
                             </div>
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                               <Receipt size={13} style={{ color: 'var(--text-muted)' }} />
-                              <span style={{ color: 'var(--text-muted)' }}>Bill:</span>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Bill:</span>
                               {txn.billDocumentId ? (
                                 <button
                                   type="button"
-                                  className="btn btn-outline"
-                                  style={{ padding: '0.15rem 0.45rem', fontSize: '0.72rem', color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                                  className="btn"
+                                  style={{
+                                    padding: '0.18rem 0.45rem',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 500,
+                                    borderRadius: '5px',
+                                    color: '#fbbf24',
+                                    backgroundColor: 'rgba(251, 191, 36, 0.12)',
+                                    border: '1px solid rgba(251, 191, 36, 0.35)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    cursor: 'pointer',
+                                  }}
                                   onClick={() => handleViewDirectDocument(txn.billDocumentId!, `Bill - ${txn.transactionNumber}`)}
                                 >
                                   <Eye size={12} /> View
                                 </button>
                               ) : (
-                                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>NA</span>
+                                <span
+                                  style={{
+                                    display: 'inline-block',
+                                    padding: '0.1rem 0.4rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 600,
+                                    color: '#94a3b8',
+                                    backgroundColor: 'rgba(148, 163, 184, 0.08)',
+                                    border: '1px solid rgba(148, 163, 184, 0.16)',
+                                    letterSpacing: '0.04em',
+                                  }}
+                                >
+                                  NA
+                                </span>
                               )}
                             </div>
                           </div>
@@ -1000,14 +1051,14 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                     </th>
 
                     {/* Column 8: Screenshot (Icon Header) */}
-                    <th style={{ textAlign: 'center', width: '60px', whiteSpace: 'nowrap' }} title="Payment Screenshot">
+                    <th style={{ textAlign: 'center', width: '82px', whiteSpace: 'nowrap' }} title="Payment Screenshot">
                       <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                         <ImageIcon size={16} />
                       </div>
                     </th>
 
                     {/* Column 9: Bill / Invoice (Icon Header) */}
-                    <th style={{ textAlign: 'center', width: '60px', whiteSpace: 'nowrap' }} title="Bill / Invoice Document">
+                    <th style={{ textAlign: 'center', width: '82px', whiteSpace: 'nowrap' }} title="Bill / Invoice Document">
                       <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                         <Receipt size={16} />
                       </div>
@@ -1077,25 +1128,42 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                         {txn.screenshotDocumentId ? (
                           <button
                             type="button"
-                            className="btn btn-outline"
+                            className="btn"
                             style={{
-                              padding: '0.3rem 0.5rem',
-                              borderRadius: 'var(--radius-sm)',
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '6px',
                               color: '#38bdf8',
-                              backgroundColor: 'rgba(56, 189, 248, 0.08)',
-                              border: '1px solid rgba(56, 189, 248, 0.3)',
+                              backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                              border: '1px solid rgba(56, 189, 248, 0.35)',
                               display: 'inline-flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               cursor: 'pointer',
+                              gap: '0.3rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              lineHeight: 1,
                             }}
                             onClick={() => handleViewDirectDocument(txn.screenshotDocumentId!, `Screenshot - ${txn.transactionNumber}`)}
                             title="View Payment Screenshot"
                           >
-                            <Eye size={14} />
+                            <Eye size={13} />
+                            <span>View</span>
                           </button>
                         ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '0.15rem 0.45rem',
+                              borderRadius: '4px',
+                              fontSize: '0.68rem',
+                              fontWeight: 600,
+                              color: '#94a3b8',
+                              backgroundColor: 'rgba(148, 163, 184, 0.08)',
+                              border: '1px solid rgba(148, 163, 184, 0.16)',
+                              letterSpacing: '0.04em',
+                            }}
+                          >
                             NA
                           </span>
                         )}
@@ -1106,25 +1174,42 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                         {txn.billDocumentId ? (
                           <button
                             type="button"
-                            className="btn btn-outline"
+                            className="btn"
                             style={{
-                              padding: '0.3rem 0.5rem',
-                              borderRadius: 'var(--radius-sm)',
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '6px',
                               color: '#fbbf24',
-                              backgroundColor: 'rgba(251, 191, 36, 0.08)',
-                              border: '1px solid rgba(251, 191, 36, 0.3)',
+                              backgroundColor: 'rgba(251, 191, 36, 0.12)',
+                              border: '1px solid rgba(251, 191, 36, 0.35)',
                               display: 'inline-flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               cursor: 'pointer',
+                              gap: '0.3rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              lineHeight: 1,
                             }}
                             onClick={() => handleViewDirectDocument(txn.billDocumentId!, `Bill - ${txn.transactionNumber}`)}
                             title="View Bill Document"
                           >
-                            <Eye size={14} />
+                            <Eye size={13} />
+                            <span>View</span>
                           </button>
                         ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '0.15rem 0.45rem',
+                              borderRadius: '4px',
+                              fontSize: '0.68rem',
+                              fontWeight: 600,
+                              color: '#94a3b8',
+                              backgroundColor: 'rgba(148, 163, 184, 0.08)',
+                              border: '1px solid rgba(148, 163, 184, 0.16)',
+                              letterSpacing: '0.04em',
+                            }}
+                          >
                             NA
                           </span>
                         )}
@@ -1225,7 +1310,16 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
       {/* Transaction Modal (Create & Edit) */}
       <TransactionModal
         isOpen={isTxnModalOpen}
-        onClose={() => setIsTxnModalOpen(false)}
+        onClose={() => {
+          setIsTxnModalOpen(false);
+          setEditingTxn(null);
+          fetchTransactions();
+        }}
+        onSuccess={async () => {
+          setIsTxnModalOpen(false);
+          setEditingTxn(null);
+          await fetchTransactions();
+        }}
         onSubmit={handleSaveTransaction}
         transaction={editingTxn}
         categories={categories}

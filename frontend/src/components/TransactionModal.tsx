@@ -29,6 +29,7 @@ import { userApi } from '../api/userApi';
 interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: (savedTxn: Transaction) => void;
   onSubmit: (data: CreateTransactionRequest | UpdateTransactionRequest) => Promise<Transaction>;
   transaction?: Transaction | null;
   categories: Category[];
@@ -39,6 +40,7 @@ interface TransactionModalProps {
 export const TransactionModal: React.FC<TransactionModalProps> = ({
   isOpen,
   onClose,
+  onSuccess,
   onSubmit,
   transaction,
   categories,
@@ -361,7 +363,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         }
       }
 
-      onClose();
+      if (onSuccess) {
+        onSuccess(savedTxn);
+      } else {
+        onClose();
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to save transaction');
     } finally {

@@ -62,4 +62,9 @@ export const transactionApi = {
     });
     return res.data;
   },
+
+  async getSuggestions(): Promise<{ payers: string[]; recipients: string[] }> {
+    const res = await apiFetch<{ payers: string[]; recipients: string[] }>('/api/v1/transactions/suggestions');
+    return res.data;
+  },
 };

@@ -24,4 +24,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.createdBy.id = :userId AND t.transactionType = com.cams.modules.transaction.model.TransactionType.OUT AND t.status != com.cams.modules.transaction.model.TransactionStatus.ARCHIVED")
     java.math.BigDecimal sumAmountSpentByUserId(@org.springframework.data.repository.query.Param("userId") UUID userId);
+
+    @Query("SELECT DISTINCT t.payerFrom FROM Transaction t WHERE t.payerFrom IS NOT NULL AND LENGTH(TRIM(t.payerFrom)) > 0 ORDER BY t.payerFrom ASC")
+    java.util.List<String> findDistinctPayers();
+
+    @Query("SELECT DISTINCT t.recipientTo FROM Transaction t WHERE t.recipientTo IS NOT NULL AND LENGTH(TRIM(t.recipientTo)) > 0 ORDER BY t.recipientTo ASC")
+    java.util.List<String> findDistinctRecipients();
 }

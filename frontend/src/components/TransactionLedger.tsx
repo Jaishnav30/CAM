@@ -911,8 +911,11 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                       )}
                     </th>
 
-                    {/* Column 4: Payer / Recipient */}
-                    <th>Payer / Recipient</th>
+                    {/* Column 4: Payer (From) */}
+                    <th>Payer (From)</th>
+
+                    {/* Column 5: Recipient (To) */}
+                    <th>Recipient (To)</th>
 
                     {/* Column 5: Category (Header Filter) */}
                     <th style={{ position: 'relative', whiteSpace: 'nowrap' }}>
@@ -1057,7 +1060,7 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                 <tbody>
                   {transactions.length === 0 ? (
                     <tr>
-                      <td colSpan={9} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                      <td colSpan={10} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                           <Search size={36} style={{ margin: '0 auto 1rem', opacity: 0.5, color: 'var(--text-secondary)' }} />
                           <h3 style={{ fontSize: 'var(--font-size-lg)', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>No Transactions Found</h3>
@@ -1088,9 +1091,17 @@ export const TransactionLedger: React.FC<TransactionLedgerProps> = ({ currentUse
                           {txn.transactionType}
                         </span>
                       </td>
+                      {/* Column 4: Payer (From) */}
                       <td>
-                        <div style={{ fontWeight: 500, fontSize: 'var(--font-size-sm)' }}>{txn.recipientTo}</div>
-                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>From: {txn.payerFrom}</div>
+                        <div style={{ fontWeight: 500, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>
+                          {txn.payerFrom || '—'}
+                        </div>
+                      </td>
+                      {/* Column 5: Recipient (To) */}
+                      <td>
+                        <div style={{ fontWeight: 500, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>
+                          {txn.recipientTo || '—'}
+                        </div>
                       </td>
                       <td>
                         <span

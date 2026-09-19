@@ -429,6 +429,14 @@ public class TransactionService {
         return TransactionResponse.fromEntity(archived);
     }
 
+    @Transactional(readOnly = true)
+    public TransactionSuggestionsResponse getSuggestions() {
+        return TransactionSuggestionsResponse.builder()
+                .payers(transactionRepository.findDistinctPayers())
+                .recipients(transactionRepository.findDistinctRecipients())
+                .build();
+    }
+
     private void validateCategoryType(Category category, TransactionType transactionType) {
         if (category.getType() == CategoryType.BOTH) {
             return;

@@ -25,6 +25,7 @@ import {
 } from '../types';
 import { documentApi } from '../api/documentApi';
 import { userApi } from '../api/userApi';
+import { transactionApi } from '../api/transactionApi';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -128,6 +129,67 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const screenshotInputRef = useRef<HTMLInputElement>(null);
   const billInputRef = useRef<HTMLInputElement>(null);
 
+  // Previous values for case-sensitive autofill suggestions
+  const [previousRecipients, setPreviousRecipients] = useState<string[]>([]);
+  const [previousPayers, setPreviousPayers] = useState<string[]>([]);
+  const [showRecipientSuggestions, setShowRecipientSuggestions] = useState<boolean>(false);
+  const [showPayerSuggestions, setShowPayerSuggestions] = useState<boolean>(false);
+
+  const recipientDropdownRef = useRef<HTMLDivElement>(null);
+  const payerDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch previous values from backend & localStorage when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const localRecipients: string[] = (() => {
+      try {
+        return JSON.parse(localStorage.getItem('cams_previous_recipients') || '[]');
+      } catch {
+        return [];
+      }
+    })();
+
+    const localPayers: string[] = (() => {
+      try {
+        return JSON.parse(localStorage.getItem('cams_previous_payers') || '[]');
+      } catch {
+        return [];
+      }
+    })();
+
+    transactionApi
+      .getSuggestions()
+      .then((data) => {
+        const mergedRecipients = Array.from(
+          new Set([...localRecipients, ...(data.recipients || [])].filter((s) => s && s.trim().length > 0))
+        );
+        const mergedPayers = Array.from(
+          new Set([...localPayers, ...(data.payers || [])].filter((s) => s && s.trim().length > 0))
+        );
+        setPreviousRecipients(mergedRecipients);
+        setPreviousPayers(mergedPayers);
+      })
+      .catch(() => {
+        setPreviousRecipients(localRecipients);
+        setPreviousPayers(localPayers);
+      });
+  }, [isOpen]);
+
+  // Click outside to close autofill suggestions
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (recipientDropdownRef.current && !recipientDropdownRef.current.contains(e.target as Node)) {
+        setShowRecipientSuggestions(false);
+      }
+      if (payerDropdownRef.current && !payerDropdownRef.current.contains(e.target as Node)) {
+        setShowPayerSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Reset or load data on modal open / transaction change
   useEffect(() => {
     if (transaction) {
@@ -197,6 +259,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     : categories.filter(
         (c) => c.type === 'BOTH' || (transactionType === 'IN' ? c.type === 'INCOME' : c.type === 'EXPENSE')
       );
+
+  // Case-sensitive suggestion matching based on previous values
+  const matchedRecipients = recipientTo.trim()
+    ? previousRecipients.filter((item) => item.includes(recipientTo.trim()))
+    : previousRecipients.slice(0, 8);
+
+  const matchedPayers = payerFrom.trim()
+    ? previousPayers.filter((item) => item.includes(payerFrom.trim()))
+    : previousPayers.slice(0, 8);
 
   // Auto-sync invoice status based on bill upload
   const handleSetBillFile = (file: File | null) => {
@@ -343,6 +414,26 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       };
 
       const savedTxn = await onSubmit(payload);
+
+      // Remember case-sensitive values in localStorage for future suggestions
+      if (recipientTo.trim()) {
+        try {
+          const currentRecipients: string[] = JSON.parse(localStorage.getItem('cams_previous_recipients') || '[]');
+          const updated = Array.from(new Set([recipientTo.trim(), ...currentRecipients])).slice(0, 50);
+          localStorage.setItem('cams_previous_recipients', JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
+      }
+      if (finalPayerFrom && finalPayerFrom.trim()) {
+        try {
+          const currentPayers: string[] = JSON.parse(localStorage.getItem('cams_previous_payers') || '[]');
+          const updated = Array.from(new Set([finalPayerFrom.trim(), ...currentPayers])).slice(0, 50);
+          localStorage.setItem('cams_previous_payers', JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
+      }
 
       // 2. Upload supporting documents if staged
       if (screenshotFile && savedTxn?.id) {
@@ -609,7 +700,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               </div>
 
               {/* Recipient (To) */}
-              <div>
+              <div ref={recipientDropdownRef} style={{ position: 'relative' }}>
                 <label
                   style={{
                     display: 'flex',
@@ -626,25 +717,86 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     Required
                   </span>
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g. JUMBO Xerox"
-                  className="form-input"
-                  value={recipientTo}
-                  onChange={(e) => {
-                    setRecipientTo(e.target.value);
-                    if (fieldErrors.recipientTo) setFieldErrors((prev) => ({ ...prev, recipientTo: undefined }));
-                  }}
-                  maxLength={150}
-                  style={{
-                    height: '3.1rem',
-                    fontSize: 'var(--font-size-base)',
-                    fontWeight: 600,
-                    borderColor: fieldErrors.recipientTo ? '#ef4444' : 'rgba(16, 185, 129, 0.5)',
-                    backgroundColor: 'var(--bg-surface)',
-                    boxShadow: fieldErrors.recipientTo ? '0 0 0 2px rgba(239, 68, 68, 0.2)' : undefined,
-                  }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder="e.g. JUMBO Xerox"
+                    className="form-input"
+                    value={recipientTo}
+                    onChange={(e) => {
+                      setRecipientTo(e.target.value);
+                      setShowRecipientSuggestions(true);
+                      if (fieldErrors.recipientTo) setFieldErrors((prev) => ({ ...prev, recipientTo: undefined }));
+                    }}
+                    onFocus={() => setShowRecipientSuggestions(true)}
+                    maxLength={150}
+                    autoComplete="off"
+                    style={{
+                      height: '3.1rem',
+                      fontSize: 'var(--font-size-base)',
+                      fontWeight: 600,
+                      borderColor: fieldErrors.recipientTo ? '#ef4444' : 'rgba(16, 185, 129, 0.5)',
+                      backgroundColor: 'var(--bg-surface)',
+                      boxShadow: fieldErrors.recipientTo ? '0 0 0 2px rgba(239, 68, 68, 0.2)' : undefined,
+                    }}
+                  />
+                  {showRecipientSuggestions && matchedRecipients.length > 0 && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        marginTop: '0.35rem',
+                        backgroundColor: '#1f2937',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.65)',
+                        maxHeight: '190px',
+                        overflowY: 'auto',
+                        zIndex: 120,
+                        padding: '0.35rem',
+                      }}
+                    >
+                      <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', padding: '0.2rem 0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Previous Recipients (Case-Sensitive)
+                      </div>
+                      {matchedRecipients.map((item) => (
+                        <div
+                          key={item}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setRecipientTo(item);
+                            setShowRecipientSuggestions(false);
+                            if (fieldErrors.recipientTo) setFieldErrors((prev) => ({ ...prev, recipientTo: undefined }));
+                          }}
+                          style={{
+                            padding: '0.45rem 0.65rem',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            fontWeight: 500,
+                            color: item === recipientTo ? '#10b981' : '#f3f4f6',
+                            backgroundColor: item === recipientTo ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            transition: 'background-color 0.12s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (item !== recipientTo) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (item !== recipientTo) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          <span>{item}</span>
+                          {item === recipientTo && <Check size={13} style={{ color: '#10b981' }} />}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {fieldErrors.recipientTo && (
                   <div style={{ color: '#ef4444', fontSize: '0.72rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
                     <AlertCircle size={13} style={{ flexShrink: 0 }} />
@@ -753,7 +905,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem', marginTop: '0.6rem' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  Supporting Documents <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>(Optional)</span>
+                  Supporting Documents
                 </label>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                   PNG, JPG, PDF up to 10MB
@@ -1269,7 +1421,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             {/* Row: Payer (From) & Invoice Status */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
               {/* Payer (From) - Editable ONLY by System Admin; Strictly locked for others */}
-              <div>
+              <div ref={payerDropdownRef} style={{ position: 'relative' }}>
                 <label
                   style={{
                     display: 'flex',
@@ -1322,33 +1474,121 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       <input
                         type="text"
                         className="form-input"
-                        list="admin-payer-options"
                         value={payerFrom}
                         onChange={(e) => {
                           setPayerFrom(e.target.value);
+                          setShowPayerSuggestions(true);
                           if (fieldErrors.payerFrom) {
                             setFieldErrors((prev) => ({ ...prev, payerFrom: undefined }));
                           }
                         }}
+                        onFocus={() => setShowPayerSuggestions(true)}
                         placeholder="Type or select payer/sender name"
+                        autoComplete="off"
                         style={{
                           height: '2.5rem',
                           fontSize: 'var(--font-size-sm)',
                           borderColor: fieldErrors.payerFrom ? '#ef4444' : undefined,
                         }}
                       />
-                      <datalist id="admin-payer-options">
-                        {fixedPayerName && (
-                          <option value={fixedPayerName}>{fixedPayerName} (Current Admin)</option>
-                        )}
-                        {registeredUsers.map((u) => (
-                          <option key={u.id} value={u.name} />
-                        ))}
-                        <option value="Club Treasury" />
-                        <option value="College Cashier / Accounts" />
-                        <option value="External Sponsor" />
-                        <option value="Student Council" />
-                      </datalist>
+                      {showPayerSuggestions && (matchedPayers.length > 0 || registeredUsers.length > 0) && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            marginTop: '0.35rem',
+                            backgroundColor: '#1f2937',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            borderRadius: '8px',
+                            boxShadow: '0 12px 28px -4px rgba(0, 0, 0, 0.65)',
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            zIndex: 120,
+                            padding: '0.35rem',
+                          }}
+                        >
+                          <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', padding: '0.2rem 0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Previous Payers (Case-Sensitive)
+                          </div>
+                          {matchedPayers.map((item) => (
+                            <div
+                              key={item}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                setPayerFrom(item);
+                                setShowPayerSuggestions(false);
+                                if (fieldErrors.payerFrom) setFieldErrors((prev) => ({ ...prev, payerFrom: undefined }));
+                              }}
+                              style={{
+                                padding: '0.45rem 0.65rem',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                fontSize: '0.82rem',
+                                fontWeight: 500,
+                                color: item === payerFrom ? '#10b981' : '#f3f4f6',
+                                backgroundColor: item === payerFrom ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                transition: 'background-color 0.12s ease',
+                              }}
+                              onMouseEnter={(e) => {
+                                if (item !== payerFrom) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                              }}
+                              onMouseLeave={(e) => {
+                                if (item !== payerFrom) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              <span>{item}</span>
+                              {item === payerFrom && <Check size={13} style={{ color: '#10b981' }} />}
+                            </div>
+                          ))}
+                          {registeredUsers.length > 0 && (
+                            <>
+                              <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', padding: '0.35rem 0.5rem 0.2rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', borderTop: '1px solid rgba(255, 255, 255, 0.08)', marginTop: '0.25rem' }}>
+                                Registered Members
+                              </div>
+                              {registeredUsers
+                                .filter((u) => !matchedPayers.includes(u.name) && (payerFrom.trim() ? u.name.includes(payerFrom.trim()) : true))
+                                .slice(0, 6)
+                                .map((u) => (
+                                  <div
+                                    key={u.id}
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      setPayerFrom(u.name);
+                                      setShowPayerSuggestions(false);
+                                      if (fieldErrors.payerFrom) setFieldErrors((prev) => ({ ...prev, payerFrom: undefined }));
+                                    }}
+                                    style={{
+                                      padding: '0.45rem 0.65rem',
+                                      borderRadius: '5px',
+                                      cursor: 'pointer',
+                                      fontSize: '0.82rem',
+                                      fontWeight: 500,
+                                      color: u.name === payerFrom ? '#10b981' : '#f3f4f6',
+                                      backgroundColor: u.name === payerFrom ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (u.name !== payerFrom) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (u.name !== payerFrom) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <span>{u.name}</span>
+                                    {u.name === payerFrom && <Check size={13} style={{ color: '#10b981' }} />}
+                                  </div>
+                                ))}
+                            </>
+                          )}
+                        </div>
+                      )}
                     </>
                   ) : (
                     <>

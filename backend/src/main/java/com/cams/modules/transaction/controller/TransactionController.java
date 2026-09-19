@@ -50,6 +50,13 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/suggestions")
+    @PreAuthorize("hasAnyAuthority('transactions:read', 'transactions:create', 'transactions:create_own')")
+    public ResponseEntity<ApiResponse<TransactionSuggestionsResponse>> getSuggestions() {
+        TransactionSuggestionsResponse response = transactionService.getSuggestions();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('transactions:read', 'transactions:create_own')")
     public ResponseEntity<ApiResponse<TransactionResponse>> getTransactionById(

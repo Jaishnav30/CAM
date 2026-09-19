@@ -49,6 +49,7 @@ public class DocumentStorageService {
     }
 
     public StagedFileInfo stageFile(MultipartFile file, String extension) throws IOException {
+        Files.createDirectories(this.stagingLocation);
         String ext = (extension != null && !extension.isBlank()) ? (extension.startsWith(".") ? extension : "." + extension) : "";
         String tempFilename = UUID.randomUUID().toString() + ext;
         Path tempFilePath = this.stagingLocation.resolve(tempFilename).normalize();

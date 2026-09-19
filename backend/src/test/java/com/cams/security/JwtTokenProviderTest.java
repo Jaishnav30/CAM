@@ -29,7 +29,7 @@ class JwtTokenProviderTest {
     void setUp() {
         tokenProvider = new JwtTokenProvider();
         ReflectionTestUtils.setField(tokenProvider, "jwtSecret", VALID_256_BIT_SECRET);
-        ReflectionTestUtils.setField(tokenProvider, "jwtExpirationInMs", 900000L); // 15 mins
+        ReflectionTestUtils.setField(tokenProvider, "jwtExpirationInMs", 86400000L); // 24 hours (1 day)
         tokenProvider.init();
     }
 

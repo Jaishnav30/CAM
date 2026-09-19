@@ -20,8 +20,8 @@ public class JwtTokenProvider {
     @Value("${app.security.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.security.jwt.access-token-expiration-ms:900000}")
-    private long jwtExpirationInMs; // Default: 15 minutes
+    @Value("${app.security.jwt.access-token-expiration-ms:86400000}")
+    private long jwtExpirationInMs; // Default: 24 hours (1 day)
 
     private SecretKey key;
 

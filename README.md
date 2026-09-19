@@ -45,4 +45,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Frontend runs on `http://localhost:3000`.
+### Note - To delete all the existing records:
+```
+docker exec -i cams-postgres psql -U cams_user -d cams_db -c "TRUNCATE TABLE reimbursements, documents, transactions CASCADE; ALTER SEQUENCE transaction_num_seq RESTART WITH 1001;" ; Get-ChildItem -Path backend\uploads -Exclude "staging" | Remove-Item -Recurse -Force
+```

@@ -628,224 +628,219 @@ export const App: React.FC = () => {
                         flexShrink: 0,
                       }}
                     >
-                    {/* Sliding pill indicator (GPU accelerated transform) */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '4px',
-                        bottom: '4px',
-                        left: '4px',
-                        width: 'calc(50% - 4px)',
-                        backgroundColor: '#ffffff',
-                        borderRadius: 'var(--radius-full)',
-                        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)',
-                        transform: isRegisterMode ? 'translateX(100%)' : 'translateX(0%)',
-                        transition: 'transform 260ms cubic-bezier(0.16, 1, 0.3, 1)',
-                        zIndex: 0,
-                        pointerEvents: 'none',
-                      }}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsRegisterMode(false);
-                        setLoginError(null);
-                      }}
-                      style={{
-                        flex: 1,
-                        position: 'relative',
-                        zIndex: 1,
-                        padding: '0.55rem 0',
-                        borderRadius: 'var(--radius-full)',
-                        border: 'none',
-                        backgroundColor: 'transparent',
-                        color: !isRegisterMode ? '#107c41' : '#64748b',
-                        fontWeight: !isRegisterMode ? 800 : 600,
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        transition: 'color 200ms ease',
-                      }}
-                    >
-                      <LogIn size={16} />
-                      Sign In
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsRegisterMode(true);
-                        setLoginError(null);
-                      }}
-                      style={{
-                        flex: 1,
-                        position: 'relative',
-                        zIndex: 1,
-                        padding: '0.55rem 0',
-                        borderRadius: 'var(--radius-full)',
-                        border: 'none',
-                        backgroundColor: 'transparent',
-                        color: isRegisterMode ? '#107c41' : '#64748b',
-                        fontWeight: isRegisterMode ? 800 : 600,
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        transition: 'color 200ms ease',
-                      }}
-                    >
-                      <UserPlus size={16} />
-                      Register
-                    </button>
-                  </div>
-
-                  {/* Animated Form Container */}
-                  <div
-                    key={isRegisterMode ? 'register' : 'login'}
-                    className="auth-form-enter"
-                    style={{
-                      flex: 1,
-                      minHeight: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {isRegisterMode ? (
-                      <RegisterForm
-                        onBackToLogin={() => {
-                          setIsRegisterMode(false);
-                          setLoginError(null);
-                        }}
-                        onRegisteredSuccess={() => {
-                          setIsRegisterMode(false);
-                          setLoginError(null);
+                      {/* Sliding pill indicator (GPU accelerated transform) */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '4px',
+                          bottom: '4px',
+                          left: '4px',
+                          width: 'calc(50% - 4px)',
+                          backgroundColor: '#ffffff',
+                          borderRadius: 'var(--radius-full)',
+                          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)',
+                          transform: isRegisterMode ? 'translateX(100%)' : 'translateX(0%)',
+                          transition: 'transform 260ms cubic-bezier(0.16, 1, 0.3, 1)',
+                          zIndex: 0,
+                          pointerEvents: 'none',
                         }}
                       />
-                    ) : (
-                      <>
-                        <div style={{ marginBottom: '1.25rem' }}>
-                          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.35rem' }}>
-                            Account Authentication
-                          </h2>
-                          <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
-                            Sign in with your CAM credentials to access the financial portal.
-                          </p>
-                        </div>
 
-                        {loginError && (
-                          <div
-                            style={{
-                              padding: '0.65rem 0.85rem',
-                              backgroundColor: '#fee2e2',
-                              border: '1px solid #fecaca',
-                              borderRadius: 'var(--radius-md)',
-                              color: '#b91c1c',
-                              fontSize: '0.82rem',
-                              marginBottom: '1rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                            }}
-                          >
-                            <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                            <span>{loginError}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsRegisterMode(false);
+                          setLoginError(null);
+                        }}
+                        style={{
+                          flex: 1,
+                          position: 'relative',
+                          zIndex: 1,
+                          padding: '0.55rem 0',
+                          borderRadius: 'var(--radius-full)',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: !isRegisterMode ? '#107c41' : '#64748b',
+                          fontWeight: !isRegisterMode ? 800 : 600,
+                          fontSize: '0.875rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          transition: 'color 200ms ease',
+                        }}
+                      >
+                        <LogIn size={16} />
+                        Sign In
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsRegisterMode(true);
+                          setLoginError(null);
+                        }}
+                        style={{
+                          flex: 1,
+                          position: 'relative',
+                          zIndex: 1,
+                          padding: '0.55rem 0',
+                          borderRadius: 'var(--radius-full)',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: isRegisterMode ? '#107c41' : '#64748b',
+                          fontWeight: isRegisterMode ? 800 : 600,
+                          fontSize: '0.875rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          transition: 'color 200ms ease',
+                        }}
+                      >
+                        <UserPlus size={16} />
+                        Register
+                      </button>
+                    </div>
+
+                    {/* Animated Form Container */}
+                    <div
+                      key={isRegisterMode ? 'register' : 'login'}
+                      className="auth-form-enter"
+                      style={{
+                        flex: 1,
+                        minHeight: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {isRegisterMode ? (
+                        <RegisterForm
+                          onBackToLogin={() => {
+                            setIsRegisterMode(false);
+                            setLoginError(null);
+                          }}
+                          onRegisteredSuccess={() => {
+                            setIsRegisterMode(false);
+                            setLoginError(null);
+                          }}
+                        />
+                      ) : (
+                        <>
+                          <div style={{ marginBottom: '1.25rem' }}>
+                            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.35rem' }}>
+                              Account Authentication
+                            </h2>
+                            <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                              Sign in with your CAM credentials to access the financial portal.
+                            </p>
                           </div>
-                        )}
 
-                        <form onSubmit={handleDirectLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              Username or Email Address *
-                            </label>
-                            <input
-                              type="text"
-                              className="form-input"
-                              value={loginEmail}
-                              onChange={(e) => setLoginEmail(e.target.value)}
-                              placeholder="e.g. username or user@cams.local"
-                              required
-                              autoComplete="username"
-                              style={{ height: '2.6rem', fontSize: '0.875rem' }}
-                            />
-                          </div>
-
-                          <div>
-                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
-                              Password *
-                            </label>
-                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                              <input
-                                type={showPassword ? 'text' : 'password'}
-                                className="form-input"
-                                value={loginPassword}
-                                onChange={(e) => setLoginPassword(e.target.value)}
-                                placeholder="••••••••"
-                                required
-                                style={{ height: '2.6rem', fontSize: '0.875rem', paddingRight: '2.75rem' }}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                position: 'absolute',
-                                right: '0.75rem',
-                                background: 'none',
-                                border: 'none',
-                                color: '#64748b',
-                                cursor: 'pointer',
+                          {loginError && (
+                            <div
+                              style={{
+                                padding: '0.65rem 0.85rem',
+                                backgroundColor: '#fee2e2',
+                                border: '1px solid #fecaca',
+                                borderRadius: 'var(--radius-md)',
+                                color: '#b91c1c',
+                                fontSize: '0.82rem',
+                                marginBottom: '1rem',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '0.25rem',
+                                gap: '0.5rem',
                               }}
-                              title={showPassword ? 'Hide Password' : 'Show Password'}
                             >
-                              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                          </div>
-                        </div>
+                              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                              <span>{loginError}</span>
+                            </div>
+                          )}
 
-                        <button
-                          type="submit"
-                          className="btn btn-primary"
-                          disabled={loginLoading}
-                          style={{
-                            padding: '0.75rem 1.5rem',
-                            fontSize: '0.95rem',
-                            fontWeight: 700,
-                            gap: '0.6rem',
-                            justifyContent: 'center',
-                            marginTop: '0.5rem',
-                          }}
-                        >
-                          <LogIn size={18} />
-                          {loginLoading ? 'Signing in...' : 'Sign In'}
-                        </button>
-                      </form>
-                    </>
-                  )}
-                </div>
+                          <form onSubmit={handleDirectLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                                Username or Email Address *
+                              </label>
+                              <input
+                                type="text"
+                                className="form-input"
+                                value={loginEmail}
+                                onChange={(e) => setLoginEmail(e.target.value)}
+                                placeholder="e.g. username or user@cams.local"
+                                required
+                                autoComplete="username"
+                                style={{ height: '2.6rem', fontSize: '0.875rem' }}
+                              />
+                            </div>
+
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                                Password *
+                              </label>
+                              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <input
+                                  type={showPassword ? 'text' : 'password'}
+                                  className="form-input"
+                                  value={loginPassword}
+                                  onChange={(e) => setLoginPassword(e.target.value)}
+                                  placeholder="••••••••"
+                                  required
+                                  style={{ height: '2.6rem', fontSize: '0.875rem', paddingRight: '2.75rem' }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  style={{
+                                    position: 'absolute',
+                                    right: '0.75rem',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#64748b',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '0.25rem',
+                                  }}
+                                  title={showPassword ? 'Hide Password' : 'Show Password'}
+                                >
+                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+
+                            <button
+                              type="submit"
+                              className="btn btn-primary"
+                              disabled={loginLoading}
+                              style={{
+                                padding: '0.75rem 1.5rem',
+                                fontSize: '0.95rem',
+                                fontWeight: 700,
+                                gap: '0.6rem',
+                                justifyContent: 'center',
+                                marginTop: '0.5rem',
+                              }}
+                            >
+                              <LogIn size={18} />
+                              {loginLoading ? 'Signing in...' : 'Sign In'}
+                            </button>
+                          </form>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
             </div>
           ) : (
             <div>
               {activeTab === 'transactions' && <TransactionLedger currentUser={currentUser} />}
               {activeTab === 'reimbursements' && <ReimbursementList currentUser={currentUser} />}
-              {activeTab === 'analytics' && canViewAnalytics && (
-                <AnalyticsDashboard
-                  currentUser={currentUser}
-                  onNavigateTab={(tab: string) => setActiveTab(tab as any)}
-                />
-              )}
+              {activeTab === 'analytics' && canViewAnalytics && <AnalyticsDashboard />}
               {activeTab === 'reports' && canViewReports && <ReportsManager />}
               {activeTab === 'audit-logs' && canViewAuditLogs && <AuditLogViewer />}
               {activeTab === 'categories' && isAdmin && <CategoryManager />}
@@ -855,7 +850,7 @@ export const App: React.FC = () => {
                     try {
                       const me = await authApi.getMe();
                       setCurrentUser(me);
-                    } catch (_) {}
+                    } catch (_) { }
                   }}
                 />
               )}
